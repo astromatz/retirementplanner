@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruhestandsplaner - Ihr Weg zur finanziellen Freiheit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- Wizard Container -->
+        <div id="wizard-container" class="wizard-container glass animate-in">
+            <header class="wizard-header">
+                <div class="logo"><span>🌱</span> Ruhestandsplaner</div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="wizard-progress"></div>
+                </div>
+            </header>
+
+            <div id="wizard-content" class="wizard-content">
+                <!-- Wizard steps will be injected here by JS -->
+            </div>
+
+            <footer class="wizard-footer">
+                <button id="prev-btn" class="btn btn-secondary" style="display: none;">Zurück</button>
+                <div class="spacer"></div>
+                <button id="next-btn" class="btn btn-primary">Weiter</button>
+            </footer>
+        </div>
+
+        <!-- Dashboard Container (Hidden initially) -->
+        <!-- Dashboard View (New Grid Layout) -->
+        <!-- Dashboard View (New Grid Layout) -->
+        <div id="view-dashboard" style="display:none;">
+            <!-- Global Dashboard Header -->
+            <header class="dashboard-top-nav glass">
+                <div class="logo"><span>🌱</span> Ruhestandsplaner</div>
+                <div class="dashboard-toolbar">
+                    <button class="btn btn-sm btn-toolbar" onclick="app.startWizard()"
+                        style="background:var(--accent); color:white;">✨ Setup Wizard</button>
+                    <button class="btn btn-sm btn-toolbar" onclick="app.saveData()"
+                        style="background:var(--secondary); color:white;">💾 Speichern</button>
+                    <label class="btn btn-sm btn-toolbar"
+                        style="background:#48bb78; color:white; margin:0; cursor:pointer;">
+                        📂 Laden
+                        <input type="file" accept=".encrypted" onchange="app.loadData(event)" style="display:none;">
+                    </label>
+                    <button class="btn btn-sm btn-toolbar" onclick="app.reset()"
+                        style="background:#ef4444; color:white;">🔄 Neu</button>
+                </div>
+            </header>
+
+            <div class="dashboard-content-wrapper">
+                <!-- KPI Bar (Full Width) -->
+                <div class="kpi-grid">
+                    <div class="card kpi-card" style="background:#f0fdf4;">
+                        <div class="kpi-label" style="color:#166534;">Vermögen am Ende</div>
+                        <div id="stat-wealth" class="kpi-value" style="color:#16a34a;">-</div>
+                    </div>
+                    <div class="card kpi-card" style="background:#fef2f2;">
+                        <div class="kpi-label" style="color:#991b1b;">Versorgungslücke</div>
+                        <div id="stat-gap" class="kpi-value" style="color:#dc2626;">-</div>
+                    </div>
+                    <!-- Coverage KPI -->
+                    <div class="card kpi-card" style="background:#eff6ff;">
+                        <div class="kpi-label" style="color:#1e40af;">Sicherheits-Check</div>
+                        <div id="kpi-coverage" class="kpi-value" style="color:#2563eb;">-%</div>
+                    </div>
+                    <!-- Monthly Buffer KPI or similar -->
+                    <div class="card kpi-card" style="background:#fdfcf0;">
+                        <div class="kpi-label" style="color:#854d0e;">Sparrate Total</div>
+                        <div id="kpi-savings" class="kpi-value" style="color:#ca8a04;">-</div>
+                    </div>
+                </div>
+
+                <!-- Main Middle Section (Split 50/50) -->
+                <div class="main-split-view">
+                    <!-- LEFT: Chart -->
+                    <div class="chart-container-large card">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h2 style="margin:0; font-size:1.1rem;">📈 Vermögensentwicklung</h2>
+                        </div>
+                        <div style="flex:1; position:relative; min-height:450px;">
+                            <canvas id="wealthChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: Editor -->
+                    <div class="editor-container card" style="padding:0; display:flex; flex-direction:column;">
+                        <div class="editor-tabs">
+                            <button class="editor-tab active" onclick="app.switchEditorTab('sparphase')">📊
+                                Sparphase</button>
+                            <button class="editor-tab" onclick="app.switchEditorTab('rentenphase')">👴
+                                Rentenphase</button>
+                            <button class="editor-tab" onclick="app.switchEditorTab('strategie')">⚙️ Strategie</button>
+                        </div>
+                        <div class="editor-body">
+                            <div id="tab-sparphase" class="editor-tab-content active"></div>
+                            <div id="tab-rentenphase" class="editor-tab-content"></div>
+                            <div id="tab-strategie" class="editor-tab-content"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Section: Detailed Table -->
+                <div class="bottom-results-view">
+                    <div class="card" style="padding:15px;">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <h2 style="margin:0; font-size:1.1rem;">📜 Detaillierte Jahrestabelle</h2>
+                            <button class="btn btn-sm" onclick="app.toggleTable()"
+                                style="background:#f1f5f9; color:#475569;">Tabelle minimieren/ausklappen</button>
+                        </div>
+                        <div id="details-table-wrapper">
+                            <div class="table-scroll-container">
+                                <table id="details-table" class="results-table">
+                                    <thead>
+                                        <tr></tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+    <!-- Password Modal -->
+    <div id="passwordModal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:#fff; padding:40px; border-radius:16px; max-width:500px; width:90%;">
+            <h2 id="modalTitle" style="margin-top:0;">Passwort</h2>
+            <p id="modalDescription" style="color:#666;"></p>
+            <div class="form-group">
+                <label>Passwort</label>
+                <input type="password" id="passwordInput"
+                    style="width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:8px;">
+            </div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button onclick="app.closePasswordModal()" class="btn btn-secondary" style="flex:1;">Abbrechen</button>
+                <button onclick="app.handlePasswordSubmit()" class="btn btn-primary" style="flex:1;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reality Check Modal -->
+    <div id="realityCheckModal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:#fff; padding:40px; border-radius:16px; max-width:500px; width:90%;">
+            <h2 style="margin-top:0;">🎯 Realitätscheck</h2>
+            <p style="color:#666;" id="rcModalDescription"></p>
+            <div id="rcInputsContainer">
+                <!-- Inputs for pots go here -->
+            </div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button onclick="app.closeRealityCheckModal()" class="btn btn-secondary"
+                    style="flex:1;">Abbrechen</button>
+                <button id="btn-save-rc" onclick="app.saveRealityCheck()" class="btn btn-primary"
+                    style="flex:1;">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>	
+
+</body>
+
+</html>
