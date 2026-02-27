@@ -14,13 +14,13 @@ export class TableRenderer {
         if (thead) {
             let rentalHeaders = rentalIncomes.map(ri => `<th class="hide-mobile">${ri.label}</th>`).join('');
             thead.innerHTML = `
-                <th>Alter</th>
+                <th class="col-alter">Alter</th>
                 <th class="hide-mobile">Jahr</th>
-                <th>Vermögen (Nom.)</th>
+                <th class="col-wealth">Vermögen</th>
                 <th class="hide-mobile hide-small">Rente</th>
                 ${rentalHeaders}
                 <th class="hide-mobile">Saldo</th>
-                <th>Details</th>`;
+                <th class="col-info">Info</th>`;
         }
 
         tableBody.innerHTML = data.map(row => {
@@ -46,18 +46,18 @@ export class TableRenderer {
 
             return `
                 <tr class="${rowClass}" data-age="${row.age}">
-                    <td><span class="expand-icon">▶</span> ${row.age}</td>
+                    <td class="col-alter"><span class="expand-icon">▶</span> ${row.age}</td>
                     <td class="hide-mobile">${row.year}</td>
-                    <td style="font-weight:600;">${format(row.totalWealth)}</td>
+                    <td class="col-wealth" style="font-weight:600;">${format(row.totalWealth)}</td>
                     <td class="hide-mobile hide-small" style="color:#10b981;">${isRet ? format(pensionVal / 12) : '-'}</td>
                     ${rentalCols}
                     <td class="hide-mobile" style="color:${netSaldo >= 0 ? '#10b981' : '#ef4444'};">${isRet ? format(netSaldo / 12) : '-'}</td>
-                    <td>
-                        <button class="btn btn-sm btn-details" data-age="${row.age}">🔍 Details</button>
+                    <td class="col-info">
+                        <button class="btn btn-sm btn-details" data-age="${row.age}">🔍 <span class="hide-mobile">Details</span></button>
                     </td>
                 </tr>
                 <tr class="detail-row" id="detail-${row.age}">
-                    <td colspan="20">
+                    <td colspan="50">
                         <div class="detail-content">
                             <div class="detail-grid">
                                 <div class="detail-section">

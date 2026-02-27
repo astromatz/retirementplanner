@@ -828,6 +828,24 @@ select:focus {
     z-index: 10;
 }
 
+/* Stable column-width classes (used instead of fragile nth-child selectors) */
+.col-alter {
+    width: 50px;
+    white-space: nowrap;
+}
+
+.col-wealth {
+    width: auto;
+    /* On mobile with table-layout:fixed, this column expands to fill remaining space */
+}
+
+.col-info {
+    width: 44px;
+    text-align: right;
+    padding-right: 8px !important;
+    white-space: nowrap;
+}
+
 .results-table td {
     padding: 10px 15px;
     border-bottom: 1px solid var(--border);
@@ -1171,6 +1189,7 @@ tr.expanded .expand-icon {
 .btn-action-label {
     line-height: 1.1;
     color: var(--text-muted);
+    white-space: nowrap;
 }
 
 .btn-action-danger:hover {
@@ -1194,20 +1213,78 @@ tr.expanded .expand-icon {
     display: table-cell;
 }
 
-@media (max-width: 768px) {
+/* Portrait mobile: hide extra columns, show landscape hint */
+@media (max-width: 768px) and (orientation: portrait) {
     .hide-mobile {
         display: none !important;
     }
 
+    .landscape-hint {
+        display: block !important;
+    }
+}
+
+/* Landscape mobile: show extra columns, hide landscape hint */
+@media (max-width: 900px) and (orientation: landscape) {
+    .landscape-hint {
+        display: none !important;
+    }
+
+    /* Allow horizontal scroll for extra columns if needed */
+    .table-scroll-container {
+        overflow-x: auto;
+    }
+}
+
+/* All mobile: compact font, auto table layout, sticky header off */
+@media (max-width: 768px) {
     .results-table {
         font-size: 0.75rem;
-        min-width: 450px;
-        /* Ensure columns have enough breathing room */
+        /* Use auto layout so colspan doesn't collapse columns */
+        table-layout: auto;
+        width: 100%;
+    }
+
+    /* Disable sticky header on mobile to avoid rendering glitches */
+    .results-table th {
+        position: static;
     }
 
     .results-table th,
     .results-table td {
-        padding: 8px 10px;
+        padding: 8px 6px;
+    }
+
+    /* On mobile portrait: fix age column narrow */
+    .col-alter {
+        width: 44px;
+        min-width: 44px;
+        max-width: 44px;
+    }
+
+    /* Info column: just large enough for the icon button */
+    .col-info {
+        width: 44px;
+        min-width: 44px;
+        max-width: 44px;
+        padding-right: 4px !important;
+        padding-left: 4px !important;
+    }
+
+    /* Wealth col: takes remaining space, clips overflow */
+    .col-wealth {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Make the details button icon-only and small */
+    .btn-details {
+        padding: 4px 6px !important;
+        font-size: 0.9rem;
+        min-width: unset;
+        width: 36px;
+        text-align: center;
     }
 }
 
@@ -1296,8 +1373,17 @@ tr.expanded .expand-icon {
     cursor: help;
     margin-left: 4px;
     color: var(--primary);
-    font-size: 0.9rem;
-    opacity: 0.7;
+    font-size: 0.75rem;
+    vertical-align: middle;
+    opacity: 0.9;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    background: var(--primary-light);
+    border-radius: 50%;
+    margin-bottom: 2px;
     transition: opacity 0.2s;
 }
 
@@ -1586,107 +1672,96 @@ tr.expanded .expand-icon {
             display: none !important;
         }
 
-        /* Ultra-compact table for iPhone 17 */
-        @media (max-width: 480px) {
-            .hide-small {
-                display: none !important;
-            }
-
-            .results-table th,
-            .results-table td {
-                padding: 4px 2px !important;
-                font-size: 0.75rem !important;
-            }
-
-            .table-scroll-container {
-                overflow-x: hidden !important;
-                /* Force fit if possible */
-            }
-
-            .results-table {
-                table-layout: fixed;
-                width: 100%;
-            }
-
-            /* Fix widths for critical columns */
-            .results-table th:nth-child(1),
-            .results-table td:nth-child(1) {
-                width: 45px;
-            }
-
-            /* Alter */
-            .results-table th:nth-child(3),
-            .results-table td:nth-child(3) {
-                width: auto;
-            }
-
-            /* Vermögen */
-            .results-table th:last-child,
-            .results-table td:last-child {
-                width: 35px;
-                text-align: center;
-                padding-right: 4px !important;
-            }
-
-            .btn-details {
-                margin: 0 auto;
-                display: block;
-            }
-
-            /* Stack detail lines vertically on extra small screens to prevent overflow */
-            .detail-line {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 2px;
-                padding: 8px 0;
-            }
-
-            .detail-value {
-                font-weight: 700;
-                color: var(--text-main);
-            }
-
-            .detail-content {
-                padding: 0.75rem;
-                border-left-width: 3px;
-            }
-
-            .detail-grid {
-                gap: 1rem;
-            }
+        /* Ultra-compact table for small phones */
+        /* (separate from outer @media, keeping as-is but removing table-layout:fixed) */
+        .hide-small {
+            display: none !important;
         }
 
-        /* Footer buttons - ensure clear click targets on mobile */
-        .wizard-footer {
-            display: flex;
-            gap: 1.5rem;
-            margin-top: 2.5rem;
-            position: relative;
-            z-index: 50;
-            /* Ensure it's above potential glass overlays */
+        .results-table th,
+        .results-table td {
+            padding: 5px 3px !important;
+            font-size: 0.78rem !important;
         }
 
-        .btn-primary,
-        .btn-secondary {
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
+        .table-scroll-container {
+            overflow-x: hidden !important;
         }
 
-        .logo span+* {
-            display: none;
+        .col-alter {
+            width: 40px !important;
+            min-width: 40px !important;
+            max-width: 40px !important;
         }
 
-        /* hide logo text */
-        .logo {
-            font-size: 0;
+        .col-info {
+            width: 40px !important;
+            min-width: 40px !important;
+            max-width: 40px !important;
+            padding-right: 4px !important;
         }
 
-        /* remove space */
-        .logo span {
-            font-size: 1.3rem;
+        .btn-details {
+            padding: 3px 5px !important;
+            width: 32px;
+            font-size: 0.85rem;
+        }
+
+        /* Stack detail lines vertically on extra small screens to prevent overflow */
+        .detail-line {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            padding: 8px 0;
+        }
+
+        .detail-value {
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .detail-content {
+            padding: 0.75rem;
+            border-left-width: 3px;
+        }
+
+        .detail-grid {
+            gap: 1rem;
         }
     }
 
+    /* Footer buttons - ensure clear click targets on mobile */
+    .wizard-footer {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 2.5rem;
+        position: relative;
+        z-index: 50;
+        /* Ensure it's above potential glass overlays */
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+
+    .logo span+* {
+        display: none;
+    }
+
+    /* hide logo text */
+    .logo {
+        font-size: 0;
+    }
+
+    /* remove space */
+    .logo span {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 768px) {
     .kpi-grid {
         grid-template-columns: 1fr 1fr;
         gap: 0.5rem;
@@ -1722,9 +1797,6 @@ tr.expanded .expand-icon {
         gap: 3px;
     }
 
-    .landscape-hint {
-        display: block !important;
-    }
 
     .chart-container-large {
         min-height: 300px;
@@ -1752,14 +1824,9 @@ tr.expanded .expand-icon {
     }
 
     .btn-details {
-        padding: 4px 6px !important;
-        font-size: 0;
-        /* Hide text on extra small */
-    }
-
-    .btn-details::after {
-        content: "🔍";
-        font-size: 1rem;
+        padding: 4px 10px !important;
+        min-width: 44px;
+        justify-content: center;
     }
 
     .detail-grid {

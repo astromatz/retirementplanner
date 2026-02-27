@@ -358,26 +358,26 @@ export class EditorRenderer {
         html += `
         <div class="card" style="background:var(--primary-light); border-left:4px solid var(--primary);">
             <div style="font-weight:600; font-size:0.9rem; margin-bottom:12px;">📅 Alter & Planung</div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px;">
-                <div class="form-group" style="margin:0;"><label style="font-size:0.7rem">Akt. Alter <span class="tooltip-trigger" data-tooltip-id="tt-age-cur">ℹ️<span class="tooltip-content" id="tt-age-cur">Dein aktuelles Lebensalter am Anfang der Planung.</span></span></label><input type="number" class="inp-age" data-key="currentAge" value="${d.currentAge}" style="padding:4px 8px; font-size:0.9rem;"></div>
-                <div class="form-group" style="margin:0;"><label style="font-size:0.7rem">Renteneintritt <span class="tooltip-trigger" data-tooltip-id="tt-age-ret">ℹ️<span class="tooltip-content" id="tt-age-ret">Das geplante Alter für den Beginn des Ruhestands.</span></span></label><input type="number" class="inp-age" data-key="retirementAge" value="${d.retirementAge}" style="padding:4px 8px; font-size:0.9rem;"></div>
-                <div class="form-group" style="margin:0;"><label style="font-size:0.7rem">Endalter <span class="tooltip-trigger" data-tooltip-id="tt-age-end">ℹ️<span class="tooltip-content" id="tt-age-end">Bis zu welchem Alter soll die Planung reichen?</span></span></label><input type="number" class="inp-age" data-key="endAge" value="${d.endAge}" style="padding:4px 8px; font-size:0.9rem;"></div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;">
+                <div class="form-group" style="margin:0;"><label style="font-size:0.65rem; display:flex; align-items:center; gap:2px; white-space:nowrap;">Alter <span class="tooltip-trigger" data-tooltip-id="tt-age-cur">ℹ️<span class="tooltip-content" id="tt-age-cur">Dein aktuelles Lebensalter am Anfang der Planung.</span></span></label><input type="number" class="inp-age" data-key="currentAge" value="${d.currentAge}" style="padding:4px; font-size:0.85rem;"></div>
+                <div class="form-group" style="margin:0;"><label style="font-size:0.65rem; display:flex; align-items:center; gap:2px; white-space:nowrap;">Rente <span class="tooltip-trigger" data-tooltip-id="tt-age-ret">ℹ️<span class="tooltip-content" id="tt-age-ret">Das geplante Alter für den Beginn des Ruhestands.</span></span></label><input type="number" class="inp-age" data-key="retirementAge" value="${d.retirementAge}" style="padding:4px; font-size:0.85rem;"></div>
+                <div class="form-group" style="margin:0;"><label style="font-size:0.65rem; display:flex; align-items:center; gap:2px; white-space:nowrap;">Ende <span class="tooltip-trigger" data-tooltip-id="tt-age-end">ℹ️<span class="tooltip-content" id="tt-age-end">Bis zu welchem Alter soll die Planung reichen?</span></span></label><input type="number" class="inp-age" data-key="endAge" value="${d.endAge}" style="padding:4px; font-size:0.85rem;"></div>
             </div>
         </div>
         <div class="card" style="background:#f8fafc; border-left:4px solid #f59e0b;">
             <div style="font-weight:600; font-size:0.9rem; margin-bottom:12px;">📊 Wirtschaftliche Annahmen</div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom: 12px;">
                 <div class="form-group" style="margin:0;">
-                    <label style="font-size:0.7rem">Jährliche Inflation (%)
-                        <span class="tooltip-trigger" data-tooltip-id="tt-inflation">ℹ️<span class="tooltip-content" id="tt-inflation">Angenommene jährliche Inflationsrate. Beeinflusst die reale Kaufkraft Ihrer Ersparnisse.</span></span>
+                    <label style="font-size:0.65rem; display:flex; align-items:center; gap:2px; white-space:nowrap;">
+                        Inflation (%) <span class="tooltip-trigger" data-tooltip-id="tt-inflation">ℹ️<span class="tooltip-content" id="tt-inflation">Angenommene jährliche Inflationsrate. Beeinflusst die reale Kaufkraft Ihrer Ersparnisse.</span></span>
                     </label>
-                    <input type="number" step="0.1" class="inp-econ" data-key="inflationRate" value="${d.inflationRate}" style="padding:4px 8px; font-size:0.9rem;">
+                    <input type="number" step="0.1" class="inp-econ" data-key="inflationRate" value="${d.inflationRate}" style="padding:4px; font-size:0.85rem;">
                 </div>
                 <div class="form-group" style="margin:0;">
-                    <label style="font-size:0.7rem">Basis-Kapitalertragsteuer (%)
-                        <span class="tooltip-trigger" data-tooltip-id="tt-tax">ℹ️<span class="tooltip-content" id="tt-tax">Globaler Steuersatz auf Kapitalerträge. Wird als Standard für neue Töpfe verwendet.</span></span>
+                    <label style="font-size:0.65rem; display:flex; align-items:center; gap:2px; white-space:nowrap;">
+                        Steuer (%) <span class="tooltip-trigger" data-tooltip-id="tt-tax">ℹ️<span class="tooltip-content" id="tt-tax">Globaler Steuersatz auf Kapitalerträge. Wird als Standard für neue Töpfe verwendet.</span></span>
                     </label>
-                    <input type="number" step="0.1" class="inp-econ" data-key="withdrawalTaxRate" value="${d.withdrawalTaxRate}" style="padding:4px 8px; font-size:0.9rem;">
+                    <input type="number" step="0.1" class="inp-econ" data-key="withdrawalTaxRate" value="${d.withdrawalTaxRate}" style="padding:4px; font-size:0.85rem;">
                 </div>
             </div>
             <div style="padding-top:10px; border-top:1px solid #e2e8f0;">
@@ -389,16 +389,32 @@ export class EditorRenderer {
                 </div>
             </div>
         </div>
-        <div class="card" id="security-check-card" style="border-left:4px solid ${sc.statusColor}; background:${sc.statusColor}18;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <div style="font-weight:700; font-size:0.9rem;">🛡️ Sicherheitscheck</div>
-                <div id="coverage-ratio" style="font-size:1.4rem; font-weight:800; color:${sc.statusColor};">${sc.scoreDisplay}</div>
+        <div class="card security-check-card" id="security-check-card" style="border-left: 5px solid ${sc.statusColor}; background: ${sc.statusColor}0a; padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div style="flex: 1;">
+                    <h3 style="margin: 0 0 4px 0; font-size: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                        🛡️ Sicherheitscheck
+                    </h3>
+                    <div id="coverage-status" style="font-size: 0.85rem; font-weight: 700; color: ${sc.statusColor}; text-transform: uppercase; letter-spacing: 0.05em;">
+                        ${sc.statusText}
+                    </div>
+                </div>
+                <div id="coverage-ratio" style="font-size: 1.75rem; font-weight: 900; color: ${sc.statusColor}; line-height: 1;">
+                    ${sc.scoreDisplay}
+                </div>
             </div>
-            <div id="coverage-status" style="font-size:0.8rem; font-weight:700; color:${sc.statusColor}; margin-bottom:6px;">${sc.statusText}</div>
-            <p style="font-size:0.78rem; color:#475569; margin:0; line-height:1.5;">${sc.commentary}</p>
-            <div class="kpi-advice" style="margin-top: 12px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 8px;">
-                <strong>💡 Experten-Tipp:</strong>
-                Ein Puffer von 20% <strong>(bezogen auf Ihre gesamten geplanten Ausgaben im Ruhestand)</strong> ist ideal. Nutzen Sie den <strong>"Kaufkraft"</strong> Schalter im Chart, um den inflationsbereinigten Realwert Ihres Vermögens zu prüfen.
+            
+            <p style="font-size: 0.9rem; color: var(--text-main); margin: 0 0 1.25rem 0; line-height: 1.6; font-weight: 500;">
+                ${sc.commentary}
+            </p>
+            
+            <div class="kpi-advice" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(0,0,0,0.08); font-size: 0.8rem; line-height: 1.5; color: var(--text-muted);">
+                <div style="display: flex; gap: 8px; align-items: flex-start; margin-bottom: 6px;">
+                    <span style="font-size: 1.1rem; line-height: 1;">💡</span>
+                    <div style="font-weight: 600; color: var(--text-main);">Experten-Tipp</div>
+                </div>
+                Ein Puffer von 20% bezogen auf Ihre geplanten Ausgaben im Ruhestand gilt als ideal. 
+                Nutzen Sie den <strong>"Kaufkraft"</strong>-Schalter im Chart, um die inflationsbereinigte Sicherheit zu prüfen.
             </div>
         </div>`;
 
