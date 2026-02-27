@@ -20,19 +20,6 @@
     --surface: #ffffff;
 }
 
-/* Input Grid Utility */
-.input-grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-}
-
-@media (max-width: 480px) {
-    .input-grid-2 {
-        gap: 0.5rem;
-    }
-}
-
 * {
     box-sizing: border-box;
     margin: 0;
@@ -326,22 +313,6 @@ p {
     font-weight: 800;
 }
 
-.kpi-advice {
-    font-size: 0.7rem;
-    line-height: 1.3;
-    color: var(--text-muted);
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
-    text-align: left;
-}
-
-.kpi-advice strong {
-    color: var(--secondary);
-    display: block;
-    margin-bottom: 2px;
-}
-
 .main-split-view {
     display: grid;
     grid-template-columns: 1fr;
@@ -352,18 +323,13 @@ p {
 @media (min-width: 1024px) {
     .main-split-view {
         grid-template-columns: 60% 40%;
-        align-items: flex-start;
-        /* Important: Allow columns to have different heights */
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-        /* Removed fixed heights to prevent overhang/overlapping */
-    }
-
-    #acc-chart {
-        position: sticky;
-        top: 80px;
-        /* Stick below the top nav */
-        z-index: 10;
+        align-items: stretch;
+        height: calc(100vh - 180px);
+        /* HÖHER: Mehr Platz nutzen */
+        min-height: 600px;
+        /* HÖHER */
+        max-height: 850px;
+        /* HÖHER: Mehr vertikaler Platz */
     }
 }
 
@@ -454,12 +420,7 @@ p {
     /* Stabilize height during re-render */
     background: white;
     /* Prevent background bleeding through during updates */
-}
-
-@media (max-width: 600px) {
-    .editor-body {
-        padding: 0.75rem 0.5rem;
-    }
+    transition: opacity 0.15s ease-in-out;
 }
 
 /* TAB CONTENT - Display Logic */
@@ -488,14 +449,13 @@ p {
 
 /* Landing Page Styles */
 .landing-page {
-    /* Full height, centered content for mobile */
-    min-height: 100vh;
-    min-height: 100dvh;
+    /* Removed position: fixed to respect body padding/safe areas */
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 2rem 1.5rem;
+    justify-content: flex-start;
+    padding: 10rem 1.5rem 4rem 1.5rem;
     text-align: center;
     width: 100%;
     max-width: 800px;
@@ -516,7 +476,7 @@ p {
 
 .landing-header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
 }
 
 .logo.large {
@@ -551,8 +511,8 @@ p {
     }
 
     .landing-header {
-        margin-top: 0;
-        margin-bottom: 1rem;
+        margin-top: 0.2rem;
+        margin-bottom: 0.2rem;
         width: 100%;
     }
 
@@ -663,29 +623,6 @@ p {
     left: 100%;
 }
 
-/* Vibrant Tab Styling */
-.editor-tab[data-tab="strategie"].active {
-    background: #eff6ff;
-    color: #1d4ed8;
-    border-bottom: 3px solid #3b82f6;
-}
-
-.editor-tab[data-tab="sparphase"].active {
-    background: #ecfdf5;
-    color: #047857;
-    border-bottom: 3px solid #10b981;
-}
-
-.editor-tab[data-tab="rentenphase"].active {
-    background: #f5f3ff;
-    color: #6d28d9;
-    border-bottom: 3px solid #8b5cf6;
-}
-
-.editor-tab:not(.active):hover {
-    background: #f8fafc;
-}
-
 @media (hover: hover) {
     .selection-card:hover {
         transform: translateY(-10px) scale(1.02);
@@ -763,17 +700,14 @@ p {
 }
 
 .form-group {
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.5rem;
 }
 
 .form-group label {
-    display: block;
     font-size: 0.75rem;
-    font-weight: 600;
-    color: #475569;
-    margin-bottom: 0.2rem;
-    line-height: 1.2;
-    /* Removed min-height to save space */
+    margin-bottom: 0.15rem;
+    display: block;
+    font-weight: 500;
 }
 
 input[type="number"],
@@ -781,21 +715,10 @@ input[type="text"],
 select {
     background: #fff;
     border: 1.5px solid var(--border);
-    padding: 0.35rem 0.5rem;
-    font-size: 0.88rem;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
     border-radius: 6px;
     width: 100%;
-    min-width: 0;
-}
-
-@media (max-width: 768px) {
-
-    input[type="number"],
-    input[type="text"],
-    select {
-        padding: 0.3rem 0.4rem;
-        font-size: 0.85rem;
-    }
 }
 
 input:focus,
@@ -885,10 +808,7 @@ tr.expanded .expand-icon {
 
 .detail-content {
     padding: 1.5rem;
-    border: 1px solid var(--border);
     border-left: 4px solid var(--primary);
-    background: #ffffff;
-    border-radius: 0 0 12px 12px;
 }
 
 .detail-grid {
@@ -1184,31 +1104,6 @@ tr.expanded .expand-icon {
 
 .table-scroll-container {
     overflow-x: auto;
-    width: 100%;
-    -webkit-overflow-scrolling: touch;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
-}
-
-.hide-mobile {
-    display: table-cell;
-}
-
-@media (max-width: 768px) {
-    .hide-mobile {
-        display: none !important;
-    }
-
-    .results-table {
-        font-size: 0.75rem;
-        min-width: 450px;
-        /* Ensure columns have enough breathing room */
-    }
-
-    .results-table th,
-    .results-table td {
-        padding: 8px 10px;
-    }
 }
 
 
@@ -1351,17 +1246,13 @@ tr.expanded .expand-icon {
 .tooltip-trigger:hover .tooltip-content {
     visibility: visible;
     opacity: 1;
-    /* Show immediately with no delay */
-    transition: opacity 0.2s 0s, visibility 0.2s 0s;
 }
 
-/* Ensure tooltip stays visible on mobile slightly longer or stays open until next tap */
+/* Responsive: Bei kleinen Bildschirmen Tooltip oben */
 @media (max-width: 768px) {
     .tooltip-content {
         width: 220px;
         font-size: 0.8rem;
-        /* Longer stay on mobile */
-        transition: opacity 0.4s 1s, visibility 0.4s 1s;
     }
 }
 
@@ -1578,84 +1469,6 @@ tr.expanded .expand-icon {
             font-size: 1.3rem;
         }
 
-        .show-extra-small {
-            display: block !important;
-        }
-
-        .hide-extra-small {
-            display: none !important;
-        }
-
-        /* Ultra-compact table for iPhone 17 */
-        @media (max-width: 480px) {
-            .hide-small {
-                display: none !important;
-            }
-
-            .results-table th,
-            .results-table td {
-                padding: 4px 2px !important;
-                font-size: 0.75rem !important;
-            }
-
-            .table-scroll-container {
-                overflow-x: hidden !important;
-                /* Force fit if possible */
-            }
-
-            .results-table {
-                table-layout: fixed;
-                width: 100%;
-            }
-
-            /* Fix widths for critical columns */
-            .results-table th:nth-child(1),
-            .results-table td:nth-child(1) {
-                width: 45px;
-            }
-
-            /* Alter */
-            .results-table th:nth-child(3),
-            .results-table td:nth-child(3) {
-                width: auto;
-            }
-
-            /* Vermögen */
-            .results-table th:last-child,
-            .results-table td:last-child {
-                width: 35px;
-                text-align: center;
-                padding-right: 4px !important;
-            }
-
-            .btn-details {
-                margin: 0 auto;
-                display: block;
-            }
-
-            /* Stack detail lines vertically on extra small screens to prevent overflow */
-            .detail-line {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 2px;
-                padding: 8px 0;
-            }
-
-            .detail-value {
-                font-weight: 700;
-                color: var(--text-main);
-            }
-
-            .detail-content {
-                padding: 0.75rem;
-                border-left-width: 3px;
-            }
-
-            .detail-grid {
-                gap: 1rem;
-            }
-        }
-
         /* Footer buttons - ensure clear click targets on mobile */
         .wizard-footer {
             display: flex;
@@ -1715,15 +1528,9 @@ tr.expanded .expand-icon {
     }
 
     .editor-tab {
-        padding: 0.75rem 0.5rem;
-        flex: 1 1 0;
+        padding: 0.75rem 1rem;
+        flex: 1 0 auto;
         text-align: center;
-        font-size: 0.75rem;
-        gap: 3px;
-    }
-
-    .landscape-hint {
-        display: block !important;
     }
 
     .chart-container-large {
@@ -1747,19 +1554,7 @@ tr.expanded .expand-icon {
 
     .results-table th,
     .results-table td {
-        padding: 8px 6px;
-        /* Narrower padding */
-    }
-
-    .btn-details {
-        padding: 4px 6px !important;
-        font-size: 0;
-        /* Hide text on extra small */
-    }
-
-    .btn-details::after {
-        content: "🔍";
-        font-size: 1rem;
+        padding: 0.5rem;
     }
 
     .detail-grid {
@@ -2007,7 +1802,7 @@ tr.expanded .expand-icon {
     -webkit-overflow-scrolling: touch;
 }
 
-.wz-tab {
+.wz-pot-tab {
     flex: 1;
     padding: 0.45rem 0.75rem;
     border: 2px solid var(--border);
@@ -2316,127 +2111,4 @@ tr.expanded .expand-icon {
     width: 10px;
     height: 10px;
     border-radius: 2px;
-}
-
-/* Dashboard Accordion System (Mobile focusing) */
-.accordion-section {
-    margin-bottom: 12px;
-}
-
-/* More compact on desktop when collapsed */
-@media (min-width: 1024px) {
-    .accordion-section:not(.expanded) {
-        margin-bottom: 4px;
-    }
-}
-
-.accordion-header {
-    /* Visible headers for navigation */
-    width: 100%;
-    padding: 12px 16px;
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: var(--text-main);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    user-select: none;
-    text-align: left;
-}
-
-.accordion-header::after {
-    content: "▸";
-    font-family: serif;
-    transition: transform 0.3s;
-    color: var(--text-muted);
-}
-
-.accordion-section.expanded .accordion-header::after {
-    transform: rotate(90deg);
-}
-
-.accordion-header:hover {
-    background: #f8fafc;
-}
-
-.accordion-section.expanded .accordion-header {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    background: var(--primary-light);
-    color: var(--primary);
-    border-color: var(--primary);
-}
-
-.accordion-content {
-    display: none;
-    /* Collapsed by default unless expanded class present */
-}
-
-.accordion-section.expanded>.accordion-content {
-    display: block;
-}
-
-@media (max-width: 768px) {
-    .accordion-header {
-        display: flex;
-    }
-
-    .accordion-content {
-        display: none;
-        padding: 4px;
-        background: #fcfcfc;
-        border: 1px solid var(--border);
-        border-top: none;
-        border-bottom-left-radius: 12px;
-        border-bottom-right-radius: 12px;
-    }
-
-    .accordion-section.expanded>.accordion-content {
-        display: block;
-    }
-
-    /* Remove card padding when inside accordion content to save space */
-    .accordion-content>.card {
-        margin: 0 !important;
-        border-radius: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
-        background: transparent !important;
-    }
-}
-
-/* Editor Accordion Sub-sections */
-.accordion-section.sub {
-    margin-top: 8px;
-    margin-bottom: 8px;
-}
-
-.accordion-header.sub {
-    font-size: 0.85rem;
-    padding: 8px 12px;
-    background: #f9fafb;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-}
-
-@media (max-width: 768px) {
-    .accordion-header.sub {
-        display: flex;
-    }
-
-    .accordion-section.sub.expanded .accordion-header.sub {
-        border-bottom-left-radius: 0;
-        border-bottom-right-radius: 0;
-    }
-
-    .accordion-section.sub .accordion-content {
-        padding: 8px;
-        border-radius: 0 0 8px 8px;
-        background: white;
-    }
 }

@@ -3,7 +3,12 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ruhestandsplaner">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Ruhestandsplaner - Ihr Weg zur finanziellen Freiheit</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,13 +20,48 @@
 
 <body>
     <div id="app">
+        <!-- Landing Page Selection -->
+        <div id="landing-page" class="landing-page animate-in">
+            <header class="landing-header">
+                <div class="logo large"><span>🌱</span> Ruhestandsplaner</div>
+                <p class="tagline">Plane heute deine finanzielle Freiheit von morgen.</p>
+            </header>
+
+            <div class="selection-grid">
+                <!-- Option 1: Wizard -->
+                <div class="selection-card glass" onclick="app.startWizard()">
+                    <div class="selection-icon">✨</div>
+                    <h3>Geführte Planung</h3>
+                    <p>Ich möchte Schritt für Schritt meinen persönlichen Plan erstellen.</p>
+                    <span class="selection-badge">Ideal für Einsteiger</span>
+                </div>
+
+                <!-- Option 2: Dummy/Demo -->
+                <div class="selection-card glass" onclick="app.loadExampleData()">
+                    <div class="selection-icon">🚀</div>
+                    <h3>Beispiel ansehen</h3>
+                    <p>Ich möchte direkt sehen, wie es funktioniert – mit Beispielwerten zum Ausprobieren.</p>
+                    <span class="selection-badge secondary">Schnellstart</span>
+                </div>
+
+                <!-- Option 3: Load -->
+                <div class="selection-card glass" onclick="document.getElementById('landing-load-file').click()">
+                    <div class="selection-icon">📂</div>
+                    <h3>Plan laden</h3>
+                    <p>Ich habe bereits einen Plan und möchte dort weitermachen, wo ich aufgehört habe.</p>
+                    <input type="file" id="landing-load-file" style="display:none" onchange="app.loadData(event)">
+                </div>
+            </div>
+
+            <footer class="landing-footer">
+                <p>Sicher & anonym: Ihre Daten werden nur lokal in Ihrem Browser verarbeitet.</p>
+            </footer>
+        </div>
+
         <!-- Wizard Container -->
-        <div id="wizard-container" class="wizard-container glass animate-in">
+        <div id="wizard-container" class="wizard-container animate-in">
             <header class="wizard-header">
                 <div class="logo"><span>🌱</span> Ruhestandsplaner</div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar" id="wizard-progress"></div>
-                </div>
             </header>
 
             <div id="wizard-content" class="wizard-content">
@@ -29,9 +69,10 @@
             </div>
 
             <footer class="wizard-footer">
-                <button id="prev-btn" class="btn btn-secondary" style="display: none;">Zurück</button>
-                <div class="spacer"></div>
-                <button id="next-btn" class="btn btn-primary">Weiter</button>
+                <button id="prev-btn" class="btn btn-wz btn-secondary" onclick="app.prevStep()"
+                    style="display: none;">Zurück</button>
+                <div id="footer-step-counter" class="wz-step-counter"></div>
+                <button id="next-btn" class="btn btn-wz btn-primary" onclick="app.nextStep()">Weiter</button>
             </footer>
         </div>
 
@@ -39,21 +80,28 @@
         <!-- Dashboard View (New Grid Layout) -->
         <!-- Dashboard View (New Grid Layout) -->
         <div id="view-dashboard" style="display:none;">
-            <!-- Global Dashboard Header -->
             <header class="dashboard-top-nav glass">
                 <div class="logo"><span>🌱</span> Ruhestandsplaner</div>
                 <div class="dashboard-toolbar">
-                    <button class="btn btn-sm btn-toolbar" onclick="app.startWizard()"
-                        style="background:var(--accent); color:white;">✨ Setup Wizard</button>
-                    <button class="btn btn-sm btn-toolbar" onclick="app.saveData()"
-                        style="background:var(--secondary); color:white;">💾 Speichern</button>
-                    <label class="btn btn-sm btn-toolbar"
-                        style="background:#48bb78; color:white; margin:0; cursor:pointer;">
-                        📂 Laden
-                        <input type="file" accept=".encrypted" onchange="app.loadData(event)" style="display:none;">
-                    </label>
-                    <button class="btn btn-sm btn-toolbar" onclick="app.reset()"
-                        style="background:#ef4444; color:white;">🔄 Neu</button>
+                    <button class="btn-action" onclick="app.startWizard()" title="Setup Wizard">
+                        <span class="btn-action-icon">✨</span>
+                        <span class="btn-action-label">Wizard</span>
+                    </button>
+                    <button class="btn-action" onclick="app.saveData()" title="Speichern">
+                        <span class="btn-action-icon">💾</span>
+                        <span class="btn-action-label">Speichern</span>
+                    </button>
+                    <button class="btn-action" onclick="document.getElementById('dashboard-load-file').click()"
+                        title="Laden">
+                        <span class="btn-action-icon">📂</span>
+                        <span class="btn-action-label">Laden</span>
+                        <input type="file" id="dashboard-load-file" accept=".encrypted" onchange="app.loadData(event)"
+                            style="display:none;">
+                    </button>
+                    <button class="btn-action btn-action-danger" onclick="app.reset()" title="Neu starten">
+                        <span class="btn-action-icon">🔄</span>
+                        <span class="btn-action-label">Neu</span>
+                    </button>
                 </div>
             </header>
 
@@ -83,100 +131,160 @@
                 <!-- Main Middle Section (Split 50/50) -->
                 <div class="main-split-view">
                     <!-- LEFT: Chart -->
-                    <div class="chart-container-large card">
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                            <h2 style="margin:0; font-size:1.1rem;">📈 Vermögensentwicklung</h2>
-                        </div>
-                        <div style="flex:1; position:relative; min-height:450px;">
-                            <canvas id="wealthChart"></canvas>
+                    <div id="acc-chart" class="accordion-section expanded">
+                        <!-- Expanded by default for primary view -->
+                        <button class="accordion-header" onclick="app.toggleAccordion(this)">📈
+                            Vermögensentwicklung</button>
+                        <div class="accordion-content">
+                            <div class="chart-container-large card">
+                                <div
+                                    style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; margin-bottom:15px; row-gap:8px;">
+                                    <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
+                                        <h2 style="margin:0; font-size:1.1rem; overflow:hidden; text-overflow:ellipsis;"
+                                            class="hide-small">📈 Vermögensentwicklung</h2>
+                                        <div id="chart-legend" class="chart-legend"
+                                            style="min-width:0; overflow:hidden;"></div>
+                                    </div>
+                                    <div class="chart-toggle-container" style="flex-shrink:0;">
+                                        <label class="switch-label"
+                                            style="display:flex; align-items:center; gap:4px; white-space:nowrap;">
+                                            <span style="font-size: 0.7rem; color: var(--text-muted);"
+                                                class="hide-extra-small">Kaufkraft anzeigen</span>
+                                            <span style="font-size: 0.7rem; color: var(--text-muted);"
+                                                class="show-extra-small">Kaufkraft</span>
+                                            <span class="tooltip-trigger" data-tooltip-id="tooltip-purchasing-power"
+                                                style="margin-right: 4px; margin-left: 0;">ℹ️<span
+                                                    class="tooltip-content" id="tooltip-purchasing-power">Zeigt den
+                                                    realen Wert Ihres Vermögens
+                                                    unter
+                                                    Berücksichtigung der Inflation an (heutige Kaufkraft).</span></span>
+                                            <input type="checkbox" id="toggle-purchasing-power"
+                                                onchange="app.togglePurchasingPower(this.checked)">
+                                            <span class="switch-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div style="flex:1; position:relative; min-height:450px;">
+                                    <canvas id="wealthChart"></canvas>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- RIGHT: Editor -->
-                    <div class="editor-container card" style="padding:0; display:flex; flex-direction:column;">
-                        <div class="editor-tabs">
-                            <button class="editor-tab active" onclick="app.switchEditorTab('sparphase')">📊
-                                Sparphase</button>
-                            <button class="editor-tab" onclick="app.switchEditorTab('rentenphase')">👴
-                                Rentenphase</button>
-                            <button class="editor-tab" onclick="app.switchEditorTab('strategie')">⚙️ Strategie</button>
-                        </div>
-                        <div class="editor-body">
-                            <div id="tab-sparphase" class="editor-tab-content active"></div>
-                            <div id="tab-rentenphase" class="editor-tab-content"></div>
-                            <div id="tab-strategie" class="editor-tab-content"></div>
+                    <div id="acc-acc-editor" class="accordion-section expanded">
+                        <button class="accordion-header" onclick="app.toggleAccordion(this)">⚙️ Einstellungen
+                            (Tabs)</button>
+                        <div class="accordion-content">
+                            <div class="editor-container card" style="padding:0; display:flex; flex-direction:column;">
+                                <div class="editor-tabs">
+                                    <button class="editor-tab active" data-tab="strategie"
+                                        onclick="app.switchEditorTab('strategie')">Strategie</button>
+                                    <button class="editor-tab" data-tab="sparphase"
+                                        onclick="app.switchEditorTab('sparphase')">Sparphase</button>
+                                    <button class="editor-tab" data-tab="rentenphase"
+                                        onclick="app.switchEditorTab('rentenphase')">Rentenphase</button>
+                                </div>
+                                <div class="editor-body">
+                                    <div id="tab-strategie" class="editor-tab-content active"></div>
+                                    <div id="tab-sparphase" class="editor-tab-content"></div>
+                                    <div id="tab-rentenphase" class="editor-tab-content"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Bottom Section: Detailed Table -->
                 <div class="bottom-results-view">
-                    <div class="card" style="padding:15px;">
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                            <h2 style="margin:0; font-size:1.1rem;">📜 Detaillierte Jahrestabelle</h2>
-                            <button class="btn btn-sm" onclick="app.toggleTable()"
-                                style="background:#f1f5f9; color:#475569;">Tabelle minimieren/ausklappen</button>
-                        </div>
-                        <div id="details-table-wrapper">
-                            <div class="table-scroll-container">
-                                <table id="details-table" class="results-table">
-                                    <thead>
-                                        <tr></tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
+                    <div id="acc-table" class="accordion-section expanded">
+                        <button class="accordion-header" onclick="app.toggleAccordion(this)">📄 Tabelle: Einnahmen &
+                            Ausgaben</button>
+                        <div class="accordion-content">
+                            <div class="card" style="padding:15px;">
+                                <div
+                                    style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; margin-bottom:12px; gap:8px;">
+                                    <div style="min-width:0;">
+                                        <h2 style="margin:0; font-size:1.1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"
+                                            class="hide-small">
+                                            📄 Ruhestand: Einnahmen & Ausgaben</h2>
+                                        <p class="landscape-hint"
+                                            style="margin:2px 0 0 0; font-size:0.65rem; color:var(--text-muted); display:none;">
+                                            💡 Mehr Spalten im Querformat sichtbar</p>
+                                    </div>
+                                </div>
+                                <div id="details-table-wrapper">
+                                    <div class="table-scroll-container">
+                                        <table id="details-table" class="results-table">
+                                            <thead>
+                                                <tr></tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
         </div>
-    </div>
 
-    </div>
-
-    <!-- Password Modal -->
-    <div id="passwordModal"
-        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
-        <div style="background:#fff; padding:40px; border-radius:16px; max-width:500px; width:90%;">
-            <h2 id="modalTitle" style="margin-top:0;">Passwort</h2>
-            <p id="modalDescription" style="color:#666;"></p>
-            <div class="form-group">
-                <label>Passwort</label>
-                <input type="password" id="passwordInput"
-                    style="width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:8px;">
-            </div>
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button onclick="app.closePasswordModal()" class="btn btn-secondary" style="flex:1;">Abbrechen</button>
-                <button onclick="app.handlePasswordSubmit()" class="btn btn-primary" style="flex:1;">OK</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Reality Check Modal -->
-    <div id="realityCheckModal"
-        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
-        <div style="background:#fff; padding:40px; border-radius:16px; max-width:500px; width:90%;">
-            <h2 style="margin-top:0;">🎯 Realitätscheck</h2>
-            <p style="color:#666;" id="rcModalDescription"></p>
-            <div id="rcInputsContainer">
-                <!-- Inputs for pots go here -->
-            </div>
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button onclick="app.closeRealityCheckModal()" class="btn btn-secondary"
-                    style="flex:1;">Abbrechen</button>
-                <button id="btn-save-rc" onclick="app.saveRealityCheck()" class="btn btn-primary"
-                    style="flex:1;">Speichern</button>
+        <!-- Password Modal -->
+        <div id="passwordModal"
+            style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+            <div style="background:#fff; padding:40px; border-radius:16px; max-width:500px; width:90%;">
+                <h2 id="modalTitle" style="margin-top:0;">Passwort</h2>
+                <p id="modalDescription" style="color:#666;"></p>
+                <div class="form-group">
+                    <label>Passwort</label>
+                    <input type="password" id="passwordInput"
+                        style="width:100%; padding:12px; border:2px solid #e2e8f0; border-radius:8px;">
+                </div>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button onclick="app.closePasswordModal()" class="btn btn-secondary"
+                        style="flex:1;">Abbrechen</button>
+                    <button onclick="app.handlePasswordSubmit()" class="btn btn-primary" style="flex:1;">OK</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <script type="module" src="app.js"></script>
+        <!-- Reality Check Modal -->
+        <div id="realityCheckModal"
+            style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+            <div style="background:#fff; padding:40px; border-radius:16px; max-width:500px; width:90%;">
+                <h2 style="margin-top:0;">🎯 Realitätscheck</h2>
+                <p style="color:#666;" id="rcModalDescription"></p>
+                <div id="rcInputsContainer">
+                    <!-- Inputs for pots go here -->
+                </div>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button onclick="app.closeRealityCheckModal()" class="btn btn-secondary"
+                        style="flex:1;">Abbrechen</button>
+                    <button id="btn-save-rc" onclick="app.saveRealityCheck()" class="btn btn-primary"
+                        style="flex:1;">Speichern</button>
+                </div>
+            </div>
+        </div>
 
-<!-- Toast Container -->
-<div id="toast-container"></div>	
+        <!-- Detail Modal (New) -->
+        <div id="detailModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalDetailTitle">🔍 Jahres-Breakdown</h2>
+                    <button class="btn-close" onclick="app.closeDetailModal()">×</button>
+                </div>
+                <div id="modalDetailContent">
+                    <!-- Dynamic content from app.js -->
+                </div>
+            </div>
+        </div>
+
+        <script type="module" src="app.js"></script>
+
+        <!-- Toast Container -->
+        <div id="toast-container"></div>
 
 </body>
 
