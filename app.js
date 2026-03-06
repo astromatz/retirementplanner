@@ -88,7 +88,8 @@ class App {
         // Render Table
         this.tableRenderer.render(results, d,
             (row) => this.toggleRow(row),
-            (age) => this.openDetailModal(age)
+            (age) => this.openDetailModal(age),
+            (age, pots) => this.openRealityCheck(age, pots)
         );
 
         // Render Editor — isStructural=false for normal value updates (patch path)
@@ -134,14 +135,173 @@ class App {
     }
 
     showView(id) {
-        ['landing-page', 'wizard-container', 'view-dashboard'].forEach(v => {
+        ['landing-page', 'wizard-container', 'view-dashboard', 'help-screen'].forEach(v => {
             let display = 'none';
             if (v === id) {
                 if (v === 'landing-page' || v === 'wizard-container') display = 'flex';
                 else display = 'block';
             }
-            document.getElementById(v).style.display = display;
+            const el = document.getElementById(v);
+            if (el) el.style.display = display;
         });
+    }
+
+    // --- HELP SYSTEM ---
+    showHelp(cardId = null) {
+        this._previousView = Array.from(document.querySelectorAll('.animate-in')).find(v => v.style.display !== 'none')?.id || 'view-dashboard';
+        this.showView('help-screen');
+        if (!this._helpInited) {
+            this.renderHelpContent();
+            this._helpInited = true;
+        }
+        if (cardId) {
+            this.deepLinkHelp(cardId);
+        } else {
+            window.scrollTo(0, 0);
+        }
+    }
+
+    closeHelp() {
+        this.showView(this._previousView || 'view-dashboard');
+    }
+
+    renderHelpContent() {
+        const container = document.getElementById('help-content');
+        if (!container) return;
+
+        const cards = [
+            {
+                id: 'karte-1', num: 1, icon: '🗺️', title: 'Wie benutze ich dieses Tool?', teaser: 'Der Ablauf in 4 Schritten', content: `
+                <p>Das Tool führt dich in vier Schritten zu deinem persönlichen Ruhestandsplan:</p>
+                <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
+                    <div style="display:flex;gap:10px;align-items:flex-start;font-size:0.8rem;">
+                        <div style="width:24px;height:24px;background:var(--primary);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.7rem;flex-shrink:0;">1</div>
+                        <div><strong>Wizard:</strong><br>Grunddaten eingeben — Alter, Sparrate, Töpfe. Ca. 5 Minuten.</div>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:flex-start;font-size:0.8rem;">
+                        <div style="width:24px;height:24px;background:var(--primary);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.7rem;flex-shrink:0;">2</div>
+                        <div><strong>Dashboard:</strong><br>Vermögensverlauf und Kennzahlen auf einen Blick.</div>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:flex-start;font-size:0.8rem;">
+                        <div style="width:24px;height:24px;background:var(--primary);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.7rem;flex-shrink:0;">3</div>
+                        <div><strong>Anpassen:</strong><br>Werte ändern, Chart reagiert sofort — einfach ausprobieren.</div>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:flex-start;font-size:0.8rem;">
+                        <div style="width:24px;height:24px;background:var(--primary);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.7rem;flex-shrink:0;">4</div>
+                        <div><strong>Speichern:</strong><br>Plan per Passwort als Datei sichern — kein Server, alles lokal.</div>
+                    </div>
+                </div>
+                <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+                    <div style="font-size:0.78rem;font-weight:600;margin-bottom:6px;">📊 Den Chart lesen</div>
+                    <p style="font-size:0.8rem;">Die Kurve zeigt dein Vermögen Jahr für Jahr. Bleibt sie über null — alles gut. Fällt sie darunter, entsteht eine Lücke. Ganz rechts siehst du, wie viel am Ende übrig bleibt.</p>
+                </div>
+                <div class="merksatz">✅ Du kannst nichts kaputt machen — Werte ändern und schauen, was passiert.</div>
+            `},
+            {
+                id: 'karte-2', num: 2, icon: '🌅', title: 'Dein Plan in Phasen denken', teaser: 'Ausgaben schwanken — Sparraten auch', content: `
+                <p>Der Ruhestand ist kein gleichförmiger Block. Dein Bedarf verändert sich — nach oben und nach unten.</p>
+                <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0;">
+                    <div style="display:flex;gap:10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 10px;font-size:0.78rem;">
+                        <span>🏃</span>
+                        <div><strong>Aktiver Ruhestand (60–75)</strong><br>Reisen, Hobbys, Restaurantbesuche — oft <strong>höhere</strong> Ausgaben als erwartet.</div>
+                    </div>
+                     <div style="display:flex;gap:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 10px;font-size:0.78rem;">
+                        <span>🛋️</span>
+                        <div><strong>Ruhigerer Ruhestand (75–85)</strong><br>Langsameres Leben, weniger Konsum — Ausgaben oft <strong>niedriger</strong>.</div>
+                    </div>
+                    <div style="display:flex;gap:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px 10px;font-size:0.78rem;">
+                        <span>🏥</span>
+                        <div><strong>Später Ruhestand (85+)</strong><br>Pflege, Unterstützung, Heimkosten — Ausgaben können wieder <strong>stark steigen</strong>.</div>
+                    </div>
+                </div>
+                <p>Im Tool bildest du das ab, indem du mehrere <strong>Ruhestands-Phasen</strong> einträgst — jede mit eigenem monatlichen Bedarf ab einem bestimmten Alter. Das Prinzip gilt genauso für die Sparphase.</p>
+                <p style="margin-top:10px;">Für größere Einmalausgaben — Weltreise, Umbau, neues Auto — gibt es die <strong>„Einmalige Ausgaben"</strong>-Funktion: Betrag und Alter eintragen, der Betrag wird einmalig vom Vermögen abgezogen.</p>
+                <div class="merksatz">✅ Ein realistischer Plan hat mindestens zwei Phasen: einen aktiven Ruhestand mit höherem Bedarf — und einen ruhigeren mit niedrigerem.</div>
+                <div class="tool-hint">🔧 Im Tool: <span class="tool-hint-link" onclick="app.closeHelp(); app.switchEditorTab('rentenphase');">Rentenphase → Ruhestands-Phasen</span></div>
+            `},
+            {
+                id: 'karte-3', num: 3, icon: '📈', title: 'Zins & Zinseszins', teaser: 'Zeit ist dein größter Hebel', content: `
+                <p>Zins bedeutet: Dein Geld bringt Geld. Im nächsten Jahr wächst nicht nur dein ursprüngliches Kapital, sondern auch der Ertrag des Vorjahres — das nennt sich Zinseszins.</p>
+                <div class="example-box">
+                    <strong>200 € / Monat bei 6 % Rendite:</strong><br>
+                    10 Jahre sparen → ca. <strong>33.000 €</strong><br>
+                    20 Jahre sparen → ca. <strong>92.000 €</strong><br>
+                    30 Jahre sparen → ca. <strong>200.000 €</strong>
+                </div>
+                <p>Die letzten 10 Jahre produzieren fast genauso viel wie die ersten 20. Das ist der wichtigste Grund, früh anzufangen.</p>
+                <p style="margin-top:8px;"><strong>Zwei Rendite-Felder im Tool:</strong> In der Ansparphase legst du oft risikoreicher an. Im Ruhestand empfiehlt sich eine konservativere Strategie.</p>
+                <div class="tool-hint">🔧 Im Tool: <span class="tool-hint-link" onclick="app.closeHelp(); app.switchEditorTab('sparphase');">Sparphase → Rendite</span></div>
+            `},
+            {
+                id: 'karte-4', num: 4, icon: '🌡️', title: 'Inflation: Das unsichtbare Loch', teaser: 'Warum 2.800 € in 30 Jahren weniger wert sind', content: `
+                <p>Inflation bedeutet: Preise steigen jedes Jahr ein bisschen. Was heute 2.800 € kostet, kostet in 30 Jahren bei 2 % Inflation etwa <strong>5.100 €</strong> — für denselben Lebensstandard.</p>
+                <div class="example-box">
+                    <strong>Was du eingibst:</strong> 2.800 € Bedarf (heutige Kaufkraft)<br>
+                    <strong>Was das Tool berechnet:</strong> In Jahr 30 braucht es ~5.100 €.<br>
+                    <strong>Kaufkraft-Toggle:</strong> Zeigt dein Vermögen in heutigen Euro.
+                </div>
+                <div class="merksatz">✅ Trag deinen Bedarf immer in heutigen Euro ein. Das Tool rechnet die Inflation automatisch drauf.</div>
+                <div class="tool-hint">🔧 Im Tool: <span class="tool-hint-link" onclick="app.closeHelp(); app.switchEditorTab('strategie');">Strategie → Inflationsrate</span></div>
+            `},
+            {
+                id: 'karte-5', num: 5, icon: '🏦', title: 'Meine Konten richtig einordnen', teaser: 'Welches Konto ist ein Topf, was eine Rente?', content: `
+                <p>Ein <strong>Topf</strong> ist jedes Konto oder Depot, das du im Ruhestand selbst anzapfst. Die Tabelle zeigt Richtwerte:</p>
+                <div style="margin:12px 0;">
+                    <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:4px;font-size:0.68rem;font-weight:700;color:var(--text-muted);padding:0 8px 4px;text-transform:uppercase;">
+                        <span>Kontotyp</span><span style="text-align:center;">Rendite</span><span style="text-align:center;">Steuer</span>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:4px;align-items:center;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px;margin-bottom:5px;font-size:0.78rem;">
+                        <div><strong>ETF-Depot</strong></div><div style="text-align:center;font-weight:700;color:var(--primary);">5–7 %</div><div style="text-align:center;font-weight:700;color:var(--primary);">18,5 %</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:4px;align-items:center;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px;margin-bottom:5px;font-size:0.78rem;">
+                        <div><strong>Tagesgeld</strong></div><div style="text-align:center;font-weight:700;color:var(--primary);">2–3 %</div><div style="text-align:center;font-weight:700;color:var(--primary);">25 %</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:4px;align-items:center;background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:8px;font-size:0.78rem;">
+                        <div><strong>Priv. Rente</strong></div><div style="text-align:center;font-weight:700;color:var(--primary);">3–5 %</div><div style="text-align:center;font-size:0.72rem;">individ.</div>
+                    </div>
+                </div>
+                <div class="warning-box">⚠️ Gesetzliche Rente & betriebl. Vorsorge gehören unter „Rentenquellen".</div>
+                <div class="merksatz">✅ Steuer auf 0 zu lassen verfälscht das Ergebnis erheblich.</div>
+            `},
+            {
+                id: 'karte-6', num: 6, icon: '⚠️', title: 'Typische Fehler vermeiden', teaser: 'Die 6 häufigsten Fallstricke', content: `
+                <div class="error-item"><span class="err-icon">📈</span><div><strong>Rendite zu optimistisch</strong><br>10 %+ klingt verlockend, ist aber unrealistisch. <span class="fix">→ Bleib bei 5–7 %.</span></div></div>
+                <div class="error-item"><span class="err-icon">🌡️</span><div><strong>Inflation auf 0 % setzen</strong><br>Unterschätzt deinen Bedarf massiv. <span class="fix">→ Mindestens 2 % einplanen.</span></div></div>
+                <div class="error-item"><span class="err-icon">💸</span><div><strong>Steuer weglassen</strong><br>Ohne Steuer sieht der Plan besser aus als er ist. <span class="fix">→ Immer ausfüllen.</span></div></div>
+                <div class="error-item"><span class="err-icon">🎂</span><div><strong>Entnahme-Ende zu früh</strong><br>„Bis 80" klingt lang — aber viele werden 90+. <span class="fix">→ Mindestens bis 90, besser 95.</span></div></div>
+                <div class="error-item"><span class="err-icon">🧾</span><div><strong>Bruttorente eingetragen</strong><br>Im Bescheid steht Brutto. <span class="fix">→ Ca. 15–20 % abziehen für KV/PV.</span></div></div>
+                <div class="error-item"><span class="err-icon">🛡️</span><div><strong>Rente zu optimistisch</strong><br>Plane lieber konservativ (Puffer). <span class="fix">→ Lieber 100€ weniger ansetzen.</span></div></div>
+                <div class="warning-box">⚠️ Dieses Tool ist kein Ersatz für eine professionelle Finanzberatung.</div>
+            `}
+        ];
+
+        container.innerHTML = cards.map(c => `
+            <div id="${c.id}" class="help-card card">
+                <div class="help-card-header" onclick="this.parentElement.classList.toggle('open')">
+                    <div class="card-num">${c.num}</div>
+                    <div class="card-icon">${c.icon}</div>
+                    <div class="card-header-text">
+                        <h3>${c.title}</h3>
+                        <div class="card-teaser">${c.teaser}</div>
+                    </div>
+                    <div class="card-chevron">▼</div>
+                </div>
+                <div class="help-card-body">
+                    ${c.content}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    deepLinkHelp(cardId) {
+        const card = document.getElementById(cardId);
+        if (card) {
+            // Close all others
+            document.querySelectorAll('.help-card').forEach(c => c.classList.remove('open', 'highlighted'));
+            card.classList.add('open', 'highlighted');
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            setTimeout(() => card.classList.remove('highlighted'), 2000);
+        }
     }
 
     // --- WIZARD logic ---
@@ -278,7 +438,7 @@ class App {
         const inner = document.querySelector(selector);
         if (!inner) return;
         const width = inner.parentElement.offsetWidth;
-        const currentTransform = new WebKitCSSMatrix(window.getComputedStyle(inner).transform).m41;
+        const currentTransform = new DOMMatrix(window.getComputedStyle(inner).transform).m41;
         const maxScroll = -(inner.children.length - 1) * width;
 
         let newScroll = currentTransform + (direction * width);
@@ -292,6 +452,8 @@ class App {
     _currentPotSlide = 0;
 
     switchPotTab(index) {
+        if (index === this._currentPotSlide) return; // Already there, don't interrupt (e.g. editing name)
+        if (document.activeElement) document.activeElement.blur();
         this._currentPotSlide = index;
         const inner = document.getElementById('pots-carousel-inner');
         if (inner) {
@@ -309,10 +471,8 @@ class App {
         this.switchPotTab(next);
     }
 
-    updatePotTabLabel(index) {
-        const nameInput = document.getElementById(`pot-name-${index}`);
-        const tab = document.getElementById(`pot-tab-${index}`);
-        if (nameInput && tab) tab.textContent = nameInput.value || `Topf ${index + 1}`;
+    updatePotName(index, value) {
+        this.state.data.pots[index].name = value;
     }
 
     // --- DASHBOARD ACTIONS ---
@@ -501,7 +661,7 @@ class App {
     }
 
     openDetailModal(age) {
-        const results = calculateSimulation(this.state.data);
+        const results = this.simulationResults;
         const row = results.find(r => r.age === age);
         if (!row) return;
 
@@ -597,29 +757,88 @@ class App {
     }
 
     initTooltipPositioning() {
-        document.addEventListener('mouseover', (e) => {
-            const trigger = e.target.closest('.tooltip-trigger');
-            if (!trigger) return;
+        let activeTooltip = null;
+        let hideTimeout = null;
+
+        const show = (trigger) => {
+            clearTimeout(hideTimeout);
             const tooltipId = trigger.getAttribute('data-tooltip-id');
             const tooltip = document.getElementById(tooltipId);
             if (!tooltip) return;
+
+            // Reset previous if different
+            if (activeTooltip && activeTooltip !== tooltip) {
+                activeTooltip.style.opacity = '0';
+                activeTooltip.style.visibility = 'hidden';
+            }
+
+            activeTooltip = tooltip;
+            tooltip.style.opacity = '1';
+            tooltip.style.visibility = 'visible';
+
             const triggerRect = trigger.getBoundingClientRect();
             const tooltipRect = tooltip.getBoundingClientRect();
 
-            // Default: Show BELOW the trigger (as requested)
             let top = triggerRect.bottom + 10;
             let left = triggerRect.left + (triggerRect.width / 2) - (tooltipRect.width / 2);
 
-            // If it would overflow the bottom of the window, show ABOVE as fallback
             if (top + tooltipRect.height > window.innerHeight - 10) {
                 top = triggerRect.top - tooltipRect.height - 10;
             }
 
             if (left < 10) left = 10;
             if (left + tooltipRect.width > window.innerWidth - 10) left = window.innerWidth - tooltipRect.width - 10;
+
             tooltip.style.top = top + 'px';
             tooltip.style.left = left + 'px';
             tooltip.style.transform = 'none';
+
+            // Mobile fix: also ensure click/touch on the link works
+            const link = tooltip.querySelector('.tt-more-link');
+            if (link) {
+                link.onclick = (e) => {
+                    e.stopPropagation(); // Prevent immediate closing
+                    const cardId = link.getAttribute('onclick').match(/'([^']+)'/)[1];
+                    this.showHelp(cardId);
+                };
+            }
+        };
+
+        const hide = () => {
+            hideTimeout = setTimeout(() => {
+                if (activeTooltip) {
+                    activeTooltip.style.opacity = '0';
+                    activeTooltip.style.visibility = 'hidden';
+                    activeTooltip = null;
+                }
+            }, 300); // Small delay to allow moving mouse TO the tooltip
+        };
+
+        // Event delegation
+        document.addEventListener('mouseover', (e) => {
+            const trigger = e.target.closest('.tooltip-trigger');
+            const tooltipContent = e.target.closest('.tooltip-content');
+
+            if (trigger) show(trigger);
+            if (tooltipContent) clearTimeout(hideTimeout); // Cancel hide if mouse is OVER tooltip
+        });
+
+        document.addEventListener('mouseout', (e) => {
+            const trigger = e.target.closest('.tooltip-trigger');
+            const tooltipContent = e.target.closest('.tooltip-content');
+
+            if (trigger || tooltipContent) hide();
+        });
+
+        // Mobile: Tap to show
+        document.addEventListener('click', (e) => {
+            const trigger = e.target.closest('.tooltip-trigger');
+            if (trigger) {
+                show(trigger);
+                // On mobile, keep it open until click elsewhere
+            } else if (!e.target.closest('.tooltip-content')) {
+                hide();
+            }
         });
     }
 
@@ -739,15 +958,42 @@ class App {
         this.rcPotValues = potValues;
         const modal = document.getElementById('realityCheckModal');
         const desc = document.getElementById('rcModalDescription');
-        desc.textContent = `Setze die realen Werte für Alter ${age} fest. Dies überschreibt die Simulation bis zu diesem Punkt.`;
+
+        const existingEntry = (this.state.data.realHistory || []).find(h => h.age === age);
+        const isAlreadyReal = !!existingEntry;
+
+        let overrideText = isAlreadyReal ? ' (bereits überschrieben)' : '';
+        desc.textContent = `Setze die realen Ist-Werte für Alter ${age} fest. Dies überschreibt die Simulation ab diesem Punkt.` + overrideText;
 
         const container = document.getElementById('rcInputsContainer');
+        const currentVals = isAlreadyReal ? existingEntry.pots : potValues;
+
         container.innerHTML = this.state.data.pots.map((p, i) => `
             <div class="form-group">
                 <label>${p.name}</label>
-                <input type="number" class="rc-pot-input" data-index="${i}" value="${potValues[i]}">
+                <input type="number" class="rc-pot-input" data-index="${i}" value="${currentVals[i].toFixed(0)}">
             </div>
         `).join('');
+
+        // Ensure "Löschen" button exists or gets removed if not applicable
+        let deleteBtn = document.getElementById('btn-delete-rc');
+        const flexContainer = document.getElementById('btn-save-rc').parentElement;
+
+        if (isAlreadyReal) {
+            if (!deleteBtn) {
+                deleteBtn = document.createElement('button');
+                deleteBtn.id = 'btn-delete-rc';
+                deleteBtn.className = 'btn btn-action-danger';
+                deleteBtn.style.flex = '1';
+                deleteBtn.textContent = 'Ist-Wert löschen';
+                deleteBtn.onclick = () => this.deleteRealityCheck();
+                flexContainer.insertBefore(deleteBtn, flexContainer.firstChild);
+            }
+        } else {
+            if (deleteBtn) {
+                deleteBtn.remove();
+            }
+        }
 
         modal.style.display = 'flex';
     }
@@ -758,7 +1004,7 @@ class App {
 
     saveRealityCheck() {
         const inputs = document.querySelectorAll('.rc-pot-input');
-        const values = Array.from(inputs).map(inp => +inp.value);
+        const values = Array.from(inputs).map(inp => Number(inp.value));
 
         const d = this.state.data;
         d.realHistory = d.realHistory || [];
@@ -771,50 +1017,123 @@ class App {
         this.showToast('Realitätscheck gespeichert.', 'success');
     }
 
+    deleteRealityCheck() {
+        const d = this.state.data;
+        if (d.realHistory) {
+            d.realHistory = d.realHistory.filter(h => h.age !== this.rcTargetAge);
+            this.stateManager.notify();
+        }
+        this.closeRealityCheckModal();
+        this.showToast('Ist-Wert entfernt. Simulation rechnet wieder normal.', 'info');
+    }
+
     // Remaining methods from original app.js
     updateCoverageDisplay(results) {
         if (!results || results.length === 0) return;
         const d = this.state.data;
         const last = results[results.length - 1];
         const elKpi = document.getElementById('kpi-coverage');
-        const elRatio = document.getElementById('coverage-ratio');
         const elStatus = document.getElementById('coverage-status');
         if (!elKpi) return;
 
         const finalWealth = last.totalWealth;
-        const totalRetirementExpenses = results
-            .filter(r => r.age >= d.retirementAge)
-            .reduce((sum, r) => sum + r.expenses, 0);
 
-        const bufferLimit = (totalRetirementExpenses || 1) * 0.2; // 20% buffer, avoid division by zero
+        // Find the first age where wealth becomes negative (gap detection)
+        const exhaustionRow = results.find(r => r.totalWealth < 0);
+        const exhaustionAge = exhaustionRow ? exhaustionRow.age : null;
 
-        let statusText = 'Unbekannt';
-        let statusColor = '#f59e0b';
-        let scoreDisplay = '0%';
+        // Calculate reserve years based on last simulated year's nominal expenses (Purchasing Power Bezug)
+        const lastRow = results[results.length - 1];
+        const lastYearExpenses = lastRow.expenses || 1;
+        const yearsOfBuffer = finalWealth / lastYearExpenses;
 
-        if (finalWealth <= 0) {
-            statusColor = '#e11d48'; // Red - Gap
-            statusText = 'Lücke';
-            scoreDisplay = '0%';
-        } else if (finalWealth < bufferLimit) {
-            statusColor = '#f59e0b'; // Amber - Tight
-            statusText = 'Knapp';
-            scoreDisplay = ((finalWealth / bufferLimit) * 100).toFixed(0) + '%';
-        } else {
-            statusColor = '#10b981'; // Green - Secure
-            statusText = 'Sicher';
-            scoreDisplay = '100%';
+        let statusText = 'Lücke';
+        let statusColor = '#dc2626'; // Red (matching stat-gap)
+        let kpiDisplay = '0 J.';
+
+        if (exhaustionAge !== null) {
+            statusText = `Lücke ab ${exhaustionAge}`;
+            statusColor = '#dc2626';
+            kpiDisplay = `Lücke ab ${exhaustionAge}`; // Show age directly in KPI bar
+        } else if (finalWealth > 0) {
+            if (yearsOfBuffer >= 3) {
+                statusColor = '#10b981'; // Green (Standard green)
+                statusText = 'Sicher';
+            } else {
+                // ... (omitted)
+                statusColor = '#f59e0b'; // Amber
+                statusText = 'Knapp';
+            }
+            kpiDisplay = Number.isFinite(yearsOfBuffer) ? yearsOfBuffer.toFixed(1) + ' J.' : '>50 J.';
         }
 
-        elKpi.textContent = scoreDisplay;
+        elKpi.textContent = kpiDisplay;
         elKpi.style.color = statusColor;
 
-        if (elRatio) elRatio.textContent = scoreDisplay;
-        if (elRatio) elRatio.style.color = statusColor;
-        if (elStatus) elStatus.textContent = statusText;
-        if (elStatus) elStatus.style.color = statusColor;
+        if (elStatus) {
+            elStatus.textContent = statusText;
+            elStatus.style.color = statusColor;
+        }
+    }
+
+    // --- CSV EXPORT ---
+    exportCSV() {
+        if (!this.simulationResults || this.simulationResults.length === 0) {
+            this.showToast('Keine Daten zum Exportieren.', 'error');
+            return;
+        }
+
+        const data = this.stateManager.getState()?.data || {};
+        const isPurchasingPower = data.showPurchasingPower;
+
+        const headers = ['Alter', 'Jahr', 'Szenario', 'Vermögen', 'Sparrate', 'Entnahme', 'Netto-Rente', 'Mieteinnahmen', 'Bedarf (Gesamt)', 'Lücke'];
+        const rows = [headers.join(';')]; // Use semicolon for German Excel
+
+        const currentYear = new Date().getFullYear();
+        const startAge = data.currentAge || 35;
+
+        this.simulationResults.forEach(r => {
+            const year = currentYear + (r.age - startAge);
+            const scenario = isPurchasingPower ? 'Kaufkraft' : 'Nominal';
+
+            // Format numbers to German locale string for Excel compatibility -> 1234,56
+            const fmt = (num) => Number(num).toFixed(2).replace('.', ',');
+
+            const row = [
+                r.age,
+                year,
+                scenario,
+                fmt(r.totalWealth),
+                fmt(r.savings),
+                fmt(r.withdrawal),
+                fmt(r.pension),
+                fmt(r.rentalIncome || 0),
+                fmt(r.expenses),
+                fmt(r.gap)
+            ];
+            rows.push(row.join(';'));
+        });
+
+        const csvContent = "\uFEFF" + rows.join('\r\n'); // \uFEFF for BOM UTF-8
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+
+        const dateStr = new Date().toISOString().split('T')[0];
+        link.setAttribute("download", `ruhestandsplan_${dateStr}_${isPurchasingPower ? 'kaufkraft' : 'nominal'}.csv`);
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        this.showToast('CSV Export erfolgreich!');
     }
 }
 
 const appInstance = new App();
+// Export the instance conditionally for non-browser environments just in case
+if (typeof window !== 'undefined') window.app = appInstance;
 export default appInstance;

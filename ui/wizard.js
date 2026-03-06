@@ -30,18 +30,24 @@ export const createWizard = (app) => ({
                 <div class="wz-concept-grid">
                     <div class="wz-concept-card">
                         <div class="wz-concept-icon">🏗️</div>
-                        <h3>Schichten-Modell</h3>
-                        <p>Wir kombinieren deine <strong>fixen Renten</strong> mit deinem <strong>privaten Vermögen</strong>.</p>
+                        <div class="wz-concept-text">
+                            <h3>Schichten-Modell</h3>
+                            <p>Wir kombinieren deine <strong>fixen Renten</strong> mit deinem <strong>privaten Vermögen</strong>.</p>
+                        </div>
                     </div>
                     <div class="wz-concept-card">
                         <div class="wz-concept-icon">💸</div>
-                        <h3>Die Entnahme-Lücke</h3>
-                        <p>Das Tool berechnet, wie viel Geld du monatlich aus deinem Ersparten entnehmen musst, um deinen Wunsch-Lebensstandard zu halten.</p>
+                        <div class="wz-concept-text">
+                            <h3>Entnahmelücke</h3>
+                            <p>Das Tool berechnet, wie viel Geld du monatlich aus deinem Ersparten entnehmen musst, um deinen Wunsch-Lebensstandard zu halten.</p>
+                        </div>
                     </div>
                     <div class="wz-concept-card">
                         <div class="wz-concept-icon">📉</div>
-                        <h3>Inflation & Steuern</h3>
-                        <p>Wichtig: Wir berücksichtigen Inflation (Kaufkraftverlust) und Steuern auf Kapitalerträge, damit dein Plan realistisch bleibt.</p>
+                        <div class="wz-concept-text">
+                            <h3>Inflation & Steuern</h3>
+                            <p>Wichtig: Wir berücksichtigen Inflation (Kaufkraftverlust) und Steuern auf Kapitalerträge, damit dein Plan realistisch bleibt.</p>
+                        </div>
                     </div>
                 </div>
                 <div class="wz-info-box">
@@ -70,6 +76,11 @@ export const createWizard = (app) => ({
                         <label>Betrachtung bis Alter</label>
                         <input type="number" id="inp-endAge" value="${data.endAge}" min="70" max="120" oninput="app.updateWizardPreview()">
                         <span class="wz-hint">Für wie lange soll dein Geld reichen?</span>
+                    </div>
+                </div>
+                <div id="wz-early-ret-hint" style="display: ${data.retirementAge < 67 ? 'block' : 'none'}; margin-bottom: 1rem;">
+                    <div class="wz-info-box" style="background: #fffbeb; border: 1px dashed #f59e0b; color: #92400e;">
+                        <strong>⚠️ Frührente geplant:</strong> Mit ${data.retirementAge} Jahren gehst du vor der Regelaltersgrenze (67) in Rente. Beachte, dass dies meist zu lebenslangen Abzügen bei deiner gesetzlichen Rente führt.
                     </div>
                 </div>
                 <div class="wz-info-box">
@@ -165,15 +176,14 @@ export const createWizard = (app) => ({
                     <p>Gib deinen Töpfen Namen, Werte und eine Renditeerwartung.</p>
                 </div>`;
 
-                if (data.pots.length > 1) {
-                    html += `<div class="wz-pot-tabs" id="pot-tabs">` +
-                        data.pots.map((pot, i) => `
-                            <button class="wz-pot-tab ${i === 0 ? 'active' : ''}"
-                                    onclick="app.switchPotTab(${i})" id="pot-tab-${i}">
-                                ${pot.name || `Topf ${i + 1}`}
-                            </button>`).join('') +
-                        `</div>`;
-                }
+                html += `<div class="wz-pot-tabs" id="pot-tabs">` +
+                    data.pots.map((pot, i) => `
+                        <div class="wz-pot-tab ${i === 0 ? 'active' : ''}" id="pot-tab-${i}" onclick="app.switchPotTab(${i})">
+                            <input type="text" id="pot-name-${i}" value="${pot.name || `Topf ${i + 1}`}"
+                                   class="wz-pot-tab-input" placeholder="Topf Name…"
+                                   oninput="app.updatePotName(${i}, this.value)">
+                        </div>`).join('') +
+                    `</div>`;
 
                 html += `<div class="wz-carousel" id="pots-carousel">
                             <div class="wz-carousel-inner" id="pots-carousel-inner">`;
@@ -181,12 +191,7 @@ export const createWizard = (app) => ({
                 data.pots.forEach((pot, i) => {
                     html += `
                     <div class="wz-carousel-slide" id="pot-slide-${i}">
-                        <div class="wz-form-card" style="border-top: 3px solid var(--primary);">
-                            <div class="wz-pot-title-row">
-                                <input type="text" id="pot-name-${i}" value="${pot.name}"
-                                       class="wz-pot-name-input" placeholder="Topf benennen (z.B. Aktien-Depot)…"
-                                       oninput="app.updatePotTabLabel(${i})">
-                            </div>
+                        <div class="wz-form-card" style="border-top: none; border-radius: 0 0 16px 16px;">
                             <div class="wz-two-col">
                                 <div class="wz-field">
                                     <label>Guthaben (€)</label>
@@ -232,9 +237,22 @@ export const createWizard = (app) => ({
 
                 html += `</div></div>`;
 
+                if (data.pots.length > 1) {
+                    html += `
+                    <div class="wz-multi-pot-hint">
+                        <span class="wz-multi-pot-hint-icon">💡</span>
+                        <div class="wz-multi-pot-hint-text">
+                            Du hast <strong>${data.pots.length} Töpfe</strong> angelegt. Nutze die Tabs oben, um die Werte und Renditen für jeden Topf einzeln festzulegen.
+                        </div>
+                    </div>`;
+                }
+
                 html += `
                 <div class="wz-info-box">
-                    <strong>💡 Tipp:</strong> Wähle eine Strategie oder passe die Zinsen manuell an. Du kannst die Werte später im Dashboard feinabstimmen.
+                    <strong>💡 Tipp:</strong> Wähle eine Strategie oder passe die Zinsen manuell an. Du kannst die Werte später im Dashboard feinabstimmen.<br>
+                    <span style="display:inline-block; margin-top:6px; opacity:0.8; font-size:0.85em;">
+                        <strong>Hinweis:</strong> Erfasse hier nur dein Positiv-Vermögen. Kredite solltest du aufgrund der meist höheren Zinsen idealerweise vorrangig tilgen.
+                    </span>
                 </div>`;
                 return html;
             },
@@ -283,36 +301,82 @@ export const createWizard = (app) => ({
                     <h2>Rente & Ausgaben</h2>
                     <p>Was brauchst du monatlich – und was kommt fest rein?</p>
                 </div>
-                <div class="wz-form-card" style="border-left: 3px solid var(--accent);">
+                <div class="wz-form-card" style="border-left: 4px solid var(--accent);">
                     <div class="wz-field">
                         <label>Wunsch-Budget im Ruhestand (€ / Monat)</label>
                         <input type="number" id="inp-retExpenses" value="${data.retirementExpenses}" min="0" oninput="app.updateWizardPreview()">
                         <span class="wz-hint">In heutiger Kaufkraft – Inflation wird automatisch berechnet.</span>
                     </div>
                 </div>
-                <div class="wz-form-card" style="border-top:3px solid #10b981;">
-                    <div class="wz-two-col">
-                        <div class="wz-field">
-                            <label style="color:#10b981;">Staatliche Rente (€/Mo.)</label>
-                            <input type="number" id="pension-amount-0" value="${data.pensions[0].amount}" oninput="app.updateWizardPreview()" onfocus="this.value = this.value">
-                        </div>
-                        <div class="wz-field">
-                            <label style="color:#3b82f6;">Andere Renten (€/Mo.)</label>
-                            <input type="number" id="pension-amount-1" value="${data.pensions[1] ? data.pensions[1].amount : 0}" oninput="app.updateWizardPreview()" onfocus="this.value = this.value">
+
+                <div class="wz-form-card" style="border-top:4px solid #10b981;">
+                    <div class="wz-field">
+                        <label style="color:#10b981;">Gesetzliche Netto-Rente (€/Mo.)</label>
+                        <input type="number" id="pension-amount-0" value="${data.pensions[0].amount}" oninput="app.updateWizardPreview()">
+                    </div>
+
+                    <div id="wz-penalty-box" style="display: ${data.retirementAge < 67 ? 'block' : 'none'}; margin-top: -5px; margin-bottom: 15px; padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; cursor: pointer; color: var(--text-main);">
+                            <input type="checkbox" id="chk-pension-penalty" ${data.pensions[0].applyPenalty ? 'checked' : ''} onchange="app.updateWizardPreview()" style="width: 16px; height: 16px;">
+                            Abzüge für Frührente schätzen (-3,6% pro Jahr vor 67)
+                        </label>
+                        <div id="wz-penalty-calc" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; padding-left: 24px;">
+                            ${data.pensions[0].applyPenalty ? `Voraussichtlicher Abzug: <strong style="color: #e11d48;">-${Math.min(14.4, (67 - data.retirementAge) * 3.6).toFixed(1)}%</strong>` : 'Maximal 14,4% Abzug möglich'}
                         </div>
                     </div>
+
+                    <div class="wz-slider-container">
+                        <div class="wz-slider-title">💡 Grobe Schätzung (falls keine Auskunft vorliegt)</div>
+                        <input type="range" class="pension-slider" id="pension-est-slider" 
+                               min="500" max="3000" step="100" value="1500" 
+                               oninput="document.getElementById('pension-amount-0').value = this.value; app.updateWizardPreview();"
+                               style="width: 100%; margin: 15px 0;">
+                        <div class="slider-ticks" style="display: flex; justify-content: space-between; padding: 0 5px;">
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">500 €</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">1.500 €</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">3.000 €</span>
+                        </div>
+                    </div>
+
+                    <div class="wz-hint-box" style="margin-top: 15px;">
+                        <strong>💡 Woher kommen die Werte?</strong>
+                        Schau in deine Rentenauskunft ("Voraussichtliche Altersrente"). 
+                        Zieh ca. 11-12% für KV/PV ab. 
+                        Benutze den <strong>heutigen</strong> Wert.
+                    </div>
                 </div>
-                <div class="wz-info-box">
-                    <strong>💡 Die Lücke:</strong> Deine private Vorsorge muss die Differenz zwischen Wunsch-Budget und festen Renteneinnahmen schließen.
+
+                <div class="wz-form-card" style="border-top:4px solid #3b82f6; margin-top: 20px;">
+                    <div class="wz-field">
+                        <label style="color:#3b82f6;">Betriebliche / Private Rente (€/Mo.)</label>
+                        <input type="number" id="pension-amount-1" value="${data.pensions[1] ? data.pensions[1].amount : 0}" oninput="app.updateWizardPreview()">
+                        <span class="wz-hint">Zusätzliche garantierte Einnahmen</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">
+                        ℹ️ Später können im Dashboard beliebig viele weitere Renten hinzugefügt werden.
+                    </div>
+                </div>
+
+                <div class="wz-hint-box" style="background:#f1f5f9; border-left-color: var(--primary);">
+                    <strong>💡 Wichtiger Hinweis</strong><br>
+                    Gib hier deine <strong>heutige</strong> Rente an. Das Tool rechnet die künftige Inflation automatisch ein.
                 </div>
             `,
             save: (data) => {
                 data.retirementExpenses = +document.getElementById('inp-retExpenses').value;
                 data.pensions[0].amount = +document.getElementById(`pension-amount-0`).value;
-                if (!data.pensions[1]) {
-                    data.pensions[1] = { id: 'private', label: 'Privat / Betrieblich', amount: 0, growth: 1.5, startAge: data.retirementAge };
-                }
+
+                // Penalty Flag
+                const applyPenalty = document.getElementById('chk-pension-penalty') ? document.getElementById('chk-pension-penalty').checked : false;
+                data.pensions[0].applyPenalty = applyPenalty;
+                // Note: Penalty is now calculated dynamically in simulation.js
+
+                if (!data.pensions[1]) data.pensions[1] = { id: 'private', label: 'Privat / Betrieblich', amount: 0, growth: 1.5, startAge: data.retirementAge };
                 data.pensions[1].amount = +document.getElementById(`pension-amount-1`).value;
+                data.pensions[1].startAge = data.retirementAge;
+
+                // Initialize default trend if not set
+                if (data.pensions[0].growth === undefined) data.pensions[0].growth = 1.5;
             },
             validate: () => true
         },
@@ -351,7 +415,15 @@ export const createWizard = (app) => ({
             id: 'plan-overview',
             render: (data) => {
                 const totalStartCapital = data.pots.reduce((sum, p) => sum + (p.value || 0), 0);
-                const totalMonthlyPensions = data.pensions.reduce((sum, p) => sum + (p.amount || 0), 0);
+                const totalMonthlyPensions = data.pensions.reduce((sum, p) => {
+                    let amount = p.amount || 0;
+                    if (p.id === 'state' && p.applyPenalty && data.retirementAge < 67) {
+                        const yearsEarly = 67 - data.retirementAge;
+                        const penaltyFactor = Math.min(14.4, yearsEarly * 3.6) / 100;
+                        amount = amount * (1 - penaltyFactor);
+                    }
+                    return sum + amount;
+                }, 0);
                 const totalMonthlySavings = data.pots.reduce((sum, p) => {
                     const currentPhase = p.savingsPhases?.find(ph => data.currentAge >= ph.fromAge && data.currentAge < ph.toAge);
                     return sum + (currentPhase ? currentPhase.amount : 0);
@@ -365,44 +437,36 @@ export const createWizard = (app) => ({
                     <p>Hier ist die Zusammenfassung deiner Strategie.</p>
                 </div>
                 
-                <div class="wz-summary-container">
-                    <div class="wz-form-card" style="margin-bottom: 1rem; border-left: 4px solid var(--primary);">
-                        <div class="wz-summary-item">
-                            <span class="wz-summary-label">⏱ Zeitplan</span>
-                            <div class="wz-summary-value">
-                                Von ${data.currentAge} bis ${data.endAge} Jahre
-                                <div class="wz-summary-sub">Rentenbeginn mit ${data.retirementAge}</div>
-                            </div>
+                <div class="wz-summary-container" style="text-align: left;">
+                    <div class="wz-form-card" style="margin-bottom: 1rem; border-left: 4px solid var(--primary); display: flex; flex-direction: column; gap: 4px;">
+                        <span class="wz-summary-label">⏱ Zeitplan</span>
+                        <div class="wz-summary-value" style="text-align: left;">
+                            Von ${data.currentAge} bis ${data.endAge} Jahre
+                            <div class="wz-summary-sub">Rentenbeginn mit ${data.retirementAge}</div>
                         </div>
                     </div>
 
-                    <div class="wz-form-card" style="margin-bottom: 1rem; border-left: 4px solid #10b981;">
-                        <div class="wz-summary-item">
-                            <span class="wz-summary-label">💰 Vermögen & Sparen</span>
-                            <div class="wz-summary-value">
-                                ${fmt(totalStartCapital)} Startkapital
-                                <div class="wz-summary-sub">${fmt(totalMonthlySavings)} Sparrate/Monat (${data.pots.length} Töpfe)</div>
-                            </div>
+                    <div class="wz-form-card" style="margin-bottom: 1rem; border-left: 4px solid #10b981; display: flex; flex-direction: column; gap: 4px;">
+                        <span class="wz-summary-label">💰 Vermögen & Sparen</span>
+                        <div class="wz-summary-value" style="text-align: left;">
+                            ${fmt(totalStartCapital)} Startkapital
+                            <div class="wz-summary-sub">${fmt(totalMonthlySavings)} Sparrate/Monat (${data.pots.length} Töpfe)</div>
                         </div>
                     </div>
 
-                    <div class="wz-form-card" style="margin-bottom: 1rem; border-left: 4px solid var(--accent);">
-                        <div class="wz-summary-item">
-                            <span class="wz-summary-label">🏝️ Ruhestand</span>
-                            <div class="wz-summary-value">
-                                ${fmt(data.retirementExpenses)} Wunsch-Budget
-                                <div class="wz-summary-sub">${fmt(totalMonthlyPensions)} garantierte Renten</div>
-                            </div>
+                    <div class="wz-form-card" style="margin-bottom: 1rem; border-left: 4px solid var(--accent); display: flex; flex-direction: column; gap: 4px;">
+                        <span class="wz-summary-label">🏝️ Ruhestand</span>
+                        <div class="wz-summary-value" style="text-align: left;">
+                            ${fmt(data.retirementExpenses)} Wunsch-Budget
+                            <div class="wz-summary-sub">${fmt(totalMonthlyPensions)} garantierte Renten</div>
                         </div>
                     </div>
 
-                    <div class="wz-form-card" style="margin-bottom: 1rem; border-left: 4px solid #6366f1;">
-                        <div class="wz-summary-item">
-                            <span class="wz-summary-label">⚙️ Strategie</span>
-                            <div class="wz-summary-value">
-                                ${data.inflationRate}% Inflation
-                                <div class="wz-summary-sub">Entnahme: ${data.withdrawalStrategy === 'proportional' ? 'Proportional' : 'Sequenziell'}</div>
-                            </div>
+                    <div class="wz-form-card" style="margin-bottom: 1rem; border-left: 4px solid #6366f1; display: flex; flex-direction: column; gap: 4px;">
+                        <span class="wz-summary-label">⚙️ Strategie</span>
+                        <div class="wz-summary-value" style="text-align: left;">
+                            ${data.inflationRate}% Inflation
+                            <div class="wz-summary-sub">Entnahme: ${data.withdrawalStrategy === 'proportional' ? 'Proportional' : 'Sequenziell'}</div>
                         </div>
                     </div>
                 </div>

@@ -39,7 +39,7 @@ export const initialState = {
         safeWithdrawalRate: 3.5,
         withdrawalTaxRate: 18.5, // Global fallback
         pensions: [
-            { id: 'state', label: 'Gesetzlich', amount: 1200, growth: 1.5, startAge: 67 },
+            { id: 'state', label: 'Gesetzlich', amount: 1200, growth: 1.5, startAge: 67, applyPenalty: false },
             { id: 'company', label: 'Betrieblich', amount: 300, growth: 0.5, startAge: 67 }
         ],
         rentalIncomes: [
@@ -48,7 +48,7 @@ export const initialState = {
         hasExpenseChanges: false,
         hasOneTimePayments: false,
         showPurchasingPower: false,
-        realHistory: {} // age -> [val0, val1, ...]
+        realHistory: [] // [{age, pots: [val0, val1, ...]}]
     }
 };
 
@@ -72,13 +72,13 @@ export const emptyState = {
         safeWithdrawalRate: 3.5,
         withdrawalTaxRate: 18.5,
         pensions: [
-            { id: 'state', label: 'Gesetzlich', amount: 0, growth: 1.5, startAge: 67 },
+            { id: 'state', label: 'Gesetzlich', amount: 0, growth: 1.5, startAge: 67, applyPenalty: false },
             { id: 'private', label: 'Privat / Betrieblich', amount: 0, growth: 1.5, startAge: 67 }
         ],
         rentalIncomes: [],
         hasExpenseChanges: false,
         hasOneTimePayments: false,
         showPurchasingPower: false,
-        realHistory: {}
+        realHistory: []
     }
 };

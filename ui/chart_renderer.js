@@ -58,12 +58,16 @@ export class ChartRenderer {
             }
         }
 
+        // The category-scale annotation plugin positions lines by 0-based index,
+        // so (retirementAge - currentAge) gives the correct column index.
+        const markerIndex = d.retirementAge - d.currentAge;
+
         const chartConfig = {
             type: 'bar',
             data: { labels: data.map(p => p.age), datasets },
             options: {
                 responsive: true,
-                animation: { duration: this.chart ? 300 : 800 }, // Faster updates
+                animation: { duration: 300 },
                 maintainAspectRatio: false,
                 layout: { padding: { bottom: 20 } },
                 scales: {
@@ -111,8 +115,8 @@ export class ChartRenderer {
                         annotations: {
                             line1: {
                                 type: 'line',
-                                xMin: d.retirementAge - d.currentAge,
-                                xMax: d.retirementAge - d.currentAge,
+                                xMin: markerIndex,
+                                xMax: markerIndex,
                                 borderColor: '#ef4444',
                                 borderWidth: 3,
                                 label: {
@@ -128,24 +132,13 @@ export class ChartRenderer {
             }
         };
 
+        // Destroy and recreate the chart on every render.
+        // Chart.js v4 normalises options into an internal copy; patching
+        // this.chart.options externally does not reliably update annotations.
         if (this.chart) {
-            // To prevent the tooltip from disappearing during an update, 
-            // we save the active elements (current hover) and restore them after update.
-            const activeElements = this.chart.getActiveElements();
-
-            this.chart.data.labels = chartConfig.data.labels;
-            this.chart.data.datasets = chartConfig.data.datasets;
-            this.chart.options = chartConfig.options;
-            this.chart.update('none'); // Update without animation for immediate display
-
-            if (activeElements && activeElements.length > 0) {
-                // Restore the hover state so the tooltip stays open
-                this.chart.setActiveElements(activeElements);
-                this.chart.tooltip.setActiveElements(activeElements);
-                this.chart.update('none');
-            }
-        } else {
-            this.chart = new Chart(ctx, chartConfig);
+            this.chart.destroy();
+            this.chart = null;
         }
+        this.chart = new Chart(ctx, chartConfig);
     }
 }

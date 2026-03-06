@@ -5,7 +5,7 @@ export function calculateSimulation(data) {
     // 0. Validation
     const curAge = Math.max(0, +data.currentAge || 35);
     const retAge = Math.max(curAge, +data.retirementAge || 67);
-    const endAge = Math.max(retAge, +data.endAge || 90);
+    const endAge = Math.min(150, Math.max(retAge, +data.endAge || 90));
     const inflation = +data.inflationRate || 0;
 
     let currentPots = (data.pots || []).map(p => ({ ...p }));
@@ -134,8 +134,17 @@ export function calculateSimulation(data) {
                 const startAge = p.startAge !== undefined ? +p.startAge : data.retirementAge;
                 if (age < startAge) return sum;
                 const growth = Number(p.growth) || 0;
-                const pensionGrowthFactor = Math.pow(1 + growth / 100, yearIndex);
-                const amount = Number(p.amount) || 0;
+                const growthIndex = Math.max(0, age - startAge);
+                const pensionGrowthFactor = Math.pow(1 + growth / 100, growthIndex);
+                let amount = Number(p.amount) || 0;
+
+                // Dynamic Early Retirement Penalty for State Pension
+                if (p.id === 'state' && p.applyPenalty && data.retirementAge < 67) {
+                    const yearsEarly = 67 - data.retirementAge;
+                    const penaltyFactor = Math.min(14.4, yearsEarly * 3.6) / 100;
+                    amount = amount * (1 - penaltyFactor);
+                }
+
                 return sum + (amount * 12) * pensionGrowthFactor;
             }, 0);
 
@@ -146,9 +155,13 @@ export function calculateSimulation(data) {
                 let netAmount = 0;
                 if (age >= startAge) {
                     const growth = Number(p.growth) || 0;
-                    const pensionGrowthFactor = Math.pow(1 + growth / 100, yearIndex);
-                    const amount = Number(p.amount) || 0;
-                    nominalAmount = (amount * 12) * pensionGrowthFactor;
+                    const startAge = p.startAge !== undefined ? p.startAge : data.retirementAge;
+                    const growthIndex = Math.max(0, age - startAge);
+                    const pensionGrowthFactor = Math.pow(1 + growth / 100, growthIndex);
+
+                    let baseAmount = Number(p.amount) || 0;
+
+                    nominalAmount = (baseAmount * 12) * pensionGrowthFactor;
                     const taxRate = Number(p.taxRate) || 0;
                     netAmount = nominalAmount * (1 - taxRate / 100);
                 }
@@ -163,7 +176,7 @@ export function calculateSimulation(data) {
             // Since different pots have different tax rates, the total gross withdrawal depends on the strategy.
             if (yearlyGap > 0) {
                 const totalWealthBeforeWithdrawal = currentPots.reduce((sum, p) => sum + p.value, 0);
-                if (totalWealthBeforeWithdrawal > 0) {
+                if (true) { // removed totalWealthBeforeWithdrawal > 0 guard
                     const globalTaxRate = +data.withdrawalTaxRate || 0;
 
                     if (data.withdrawalStrategy === 'proportional' || !data.withdrawalStrategy) {
@@ -173,11 +186,17 @@ export function calculateSimulation(data) {
                         // TotalGross = Net / Sum(Share_i * NetFactor_i)
 
                         let weightedNetFactor = 0;
-                        currentPots.forEach(pot => {
-                            const potTax = pot.taxRate !== undefined ? +pot.taxRate : globalTaxRate;
-                            const share = pot.value / totalWealthBeforeWithdrawal;
-                            weightedNetFactor += share * (1 - (potTax / 100));
-                        });
+                        if (totalWealthBeforeWithdrawal > 0) {
+                            currentPots.forEach(pot => {
+                                const potTax = pot.taxRate !== undefined ? +pot.taxRate : globalTaxRate;
+                                const share = pot.value / totalWealthBeforeWithdrawal;
+                                weightedNetFactor += share * (1 - (potTax / 100));
+                            });
+                        } else {
+                            // Fallback if wealth is 0 or negative: use global tax rate or average of pots
+                            const avgTax = currentPots.reduce((sum, p) => sum + (p.taxRate !== undefined ? +p.taxRate : globalTaxRate), 0) / (currentPots.length || 1);
+                            weightedNetFactor = (1 - (avgTax / 100));
+                        }
 
                         if (weightedNetFactor > 0) {
                             yearlyWithdrawalNeeded = yearlyGap / weightedNetFactor;
@@ -192,23 +211,28 @@ export function calculateSimulation(data) {
                             ? data.withdrawalOrder
                             : currentPots.map((_, i) => i);
 
-                        for (let idx of order) {
+                        for (let i = 0; i < order.length; i++) {
+                            const idx = order[i];
                             if (netRemaining <= 0) break;
                             const pot = currentPots[idx];
-                            if (!pot || pot.value <= 0) continue;
+                            if (!pot) continue;
 
                             const potTax = pot.taxRate !== undefined ? +pot.taxRate : globalTaxRate;
                             const netFactor = (1 - (potTax / 100));
-                            if (netFactor <= 0) { // Tax 100% or more (impossible but safeguard)
-                                grossTotal += pot.value;
-                                pot.value = 0;
-                                continue;
+                            if (netFactor <= 0) continue;
+
+                            const isLastPotInOrder = (i === order.length - 1);
+                            const maxNetFromPot = Math.max(0, pot.value * netFactor);
+
+                            let netToTake;
+                            if (isLastPotInOrder) {
+                                // If it's the last pot in the sequence, take everything remaining regardless of balance
+                                netToTake = netRemaining;
+                            } else {
+                                netToTake = Math.min(netRemaining, maxNetFromPot);
                             }
 
-                            const maxNetFromPot = pot.value * netFactor;
-                            const netToTake = Math.min(netRemaining, maxNetFromPot);
                             const grossToTake = netToTake / netFactor;
-
                             pot.value -= grossToTake;
                             netRemaining -= netToTake;
                             grossTotal += grossToTake;
@@ -222,11 +246,16 @@ export function calculateSimulation(data) {
         // 5. Apply Withdrawals (only for proportional, sequential is handled above)
         if (yearlyWithdrawalNeeded > 0) {
             const totalWealthBeforeWithdrawal = currentPots.reduce((sum, p) => sum + p.value, 0);
-            if (totalWealthBeforeWithdrawal > 0 && (data.withdrawalStrategy === 'proportional' || !data.withdrawalStrategy)) {
-                currentPots.forEach(pot => {
-                    const share = pot.value / totalWealthBeforeWithdrawal;
-                    pot.value -= yearlyWithdrawalNeeded * share;
-                });
+            if (data.withdrawalStrategy === 'proportional' || !data.withdrawalStrategy) {
+                if (totalWealthBeforeWithdrawal > 0) {
+                    currentPots.forEach(pot => {
+                        const share = pot.value / totalWealthBeforeWithdrawal;
+                        pot.value -= yearlyWithdrawalNeeded * share;
+                    });
+                } else if (currentPots.length > 0) {
+                    // Fallback: apply to first pot OR distribute equally if wealth is zero/negative
+                    currentPots[0].value -= yearlyWithdrawalNeeded;
+                }
             }
         }
 
@@ -255,8 +284,17 @@ export function calculateSimulation(data) {
                 const startAge = p.startAge !== undefined ? +p.startAge : data.retirementAge;
                 if (age >= startAge) {
                     const growth = Number(p.growth) || 0;
-                    const pensionGrowthFactor = Math.pow(1 + growth / 100, yearIndex);
-                    const amount = Number(p.amount) || 0;
+                    const growthIndex = Math.max(0, age - startAge);
+                    const pensionGrowthFactor = Math.pow(1 + growth / 100, growthIndex);
+                    let amount = Number(p.amount) || 0;
+
+                    // Apply Early Retirement Penalty for Detail View
+                    if (p.id === 'state' && p.applyPenalty && data.retirementAge < 67) {
+                        const yearsEarly = 67 - data.retirementAge;
+                        const penaltyFactor = Math.min(14.4, yearsEarly * 3.6) / 100;
+                        amount = amount * (1 - penaltyFactor);
+                    }
+
                     incomeDetails.push({
                         label: p.label,
                         baseAmount: amount * 12,

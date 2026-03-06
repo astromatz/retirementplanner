@@ -3,7 +3,7 @@ export class TableRenderer {
         this.tableSelector = tableSelector;
     }
 
-    render(data, appState, toggleRowCallback, openDetailModalCallback) {
+    render(data, appState, toggleRowCallback, openDetailModalCallback, openRealityCheckCallback) {
         const d = appState;
         const format = (v) => new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
         const tableBody = document.querySelector(`${this.tableSelector} tbody`);
@@ -53,7 +53,8 @@ export class TableRenderer {
                     ${rentalCols}
                     <td class="hide-mobile" style="color:${netSaldo >= 0 ? '#10b981' : '#ef4444'};">${isRet ? format(netSaldo / 12) : '-'}</td>
                     <td class="col-info">
-                        <button class="btn btn-sm btn-details" data-age="${row.age}">🔍 <span class="hide-mobile">Details</span></button>
+                        <button class="btn btn-sm btn-details" data-age="${row.age}" title="Details ansehen">🔍 <span class="hide-mobile">Details</span></button>
+                        ${row.age <= d.currentAge || row.isReal ? `<button class="btn btn-sm btn-rc" data-age="${row.age}" data-pots='${JSON.stringify(row.pots.map(p => p.value))}' title="Realen Ist-Wert hinterlegen" style="margin-left: 5px;">🎯</button>` : ''}
                     </td>
                 </tr>
                 <tr class="detail-row" id="detail-${row.age}">
@@ -128,6 +129,15 @@ export class TableRenderer {
             btn.onclick = (e) => {
                 e.stopPropagation();
                 openDetailModalCallback(parseInt(btn.getAttribute('data-age')));
+            };
+        });
+
+        document.querySelectorAll('.btn-rc').forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                const age = parseInt(btn.getAttribute('data-age'));
+                const pots = JSON.parse(btn.getAttribute('data-pots'));
+                if (openRealityCheckCallback) openRealityCheckCallback(age, pots);
             };
         });
     }

@@ -51,10 +51,22 @@
                     <p>Ich habe bereits einen Plan und möchte dort weitermachen, wo ich aufgehört habe.</p>
                     <input type="file" id="landing-load-file" style="display:none" onchange="app.loadData(event)">
                 </div>
+
+                <!-- Option 4: Guide (Help & Wissen) -->
+                <div class="selection-card help-card glass" onclick="app.showHelp()">
+                    <div class="selection-icon">📖</div>
+                    <div class="help-card-text">
+                        <h3>Hilfe & Wissen</h3>
+                        <p>Wie funktioniert das Tool? Was bedeuten die Felder?</p>
+                        <span class="sel-badge help">Vor dem Start lesen</span>
+                    </div>
+                    <span class="help-card-arrow" style="margin-left:auto; color:#c2410c;">→</span>
+                </div>
             </div>
 
             <footer class="landing-footer">
-                <p>Sicher & anonym: Ihre Daten werden nur lokal in Ihrem Browser verarbeitet.</p>
+                <p>© 2026 Mathias Böhme. <br>Sicher & anonym: Ihre Daten werden nur lokal in Ihrem Browser verarbeitet.
+                </p>
             </footer>
         </div>
 
@@ -91,12 +103,24 @@
                         <span class="btn-action-icon">💾</span>
                         <span class="btn-action-label">Speichern</span>
                     </button>
+                    <button class="btn-action" onclick="window.print()" title="Drucken">
+                        <span class="btn-action-icon">🖨️</span>
+                        <span class="btn-action-label">Drucken</span>
+                    </button>
+                    <button class="btn-action" onclick="app.exportCSV()" title="CSV Export">
+                        <span class="btn-action-icon">📊</span>
+                        <span class="btn-action-label">CSV</span>
+                    </button>
                     <button class="btn-action" onclick="document.getElementById('dashboard-load-file').click()"
                         title="Laden">
                         <span class="btn-action-icon">📂</span>
                         <span class="btn-action-label">Laden</span>
                         <input type="file" id="dashboard-load-file" accept=".encrypted" onchange="app.loadData(event)"
                             style="display:none;">
+                    </button>
+                    <button class="btn-action btn-help" onclick="app.showHelp()" title="Hilfe">
+                        <span class="btn-action-icon">📖</span>
+                        <span class="btn-action-label">Hilfe</span>
                     </button>
                     <button class="btn-action btn-action-danger" onclick="app.reset()" title="Neu starten">
                         <span class="btn-action-icon">🔄</span>
@@ -229,6 +253,9 @@
                 </div>
             </div>
 
+            <footer class="dashboard-footer">
+                <p>© 2026 Mathias Böhme. Alle Berechnungen sind ohne Gewähr und stellen keine Anlageberatung dar.</p>
+            </footer>
         </div>
 
         <!-- Password Modal -->
@@ -268,16 +295,23 @@
             </div>
         </div>
 
-        <!-- Detail Modal (New) -->
-        <div id="detailModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 id="modalDetailTitle">🔍 Jahres-Breakdown</h2>
-                    <button class="btn-close" onclick="app.closeDetailModal()">×</button>
-                </div>
-                <div id="modalDetailContent">
-                    <!-- Dynamic content from app.js -->
-                </div>
+        <div id="help-screen" class="help-screen animate-in" style="display:none;">
+            <div class="help-topbar">
+                <button class="back-btn" onclick="app.closeHelp()">
+                    <span class="back-btn-arrow">←</span> Zurück zum Plan
+                </button>
+                <div class="help-topbar-title">Hilfe & Wissen</div>
+                <div class="help-topbar-sub">6 Themen</div>
+            </div>
+
+            <div class="help-intro">
+                <h2>📖 Hilfe & Wissen</h2>
+                <p>Die gesetzliche Rente reicht für die meisten nicht — die Lücke musst du selbst schließen. Dieses Tool
+                    hilft dir dabei. Klappe auf, was dich interessiert.</p>
+            </div>
+
+            <div class="help-cards-list" id="help-content">
+                <!-- Dynamic help cards -->
             </div>
         </div>
 
