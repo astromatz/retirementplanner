@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Mockup – Anleitung & Hilfe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Design Tokens (matching the real app) ─────────────────────────── */
+:root {
+  --primary:       hsl(161, 72%, 40%);
+  --primary-light: hsl(161, 72%, 95%);
+  --primary-glow:  hsla(161, 72%, 40%, 0.18);
+  --accent:        hsl(250, 84%, 67%);
+  --secondary:     hsl(215, 25%, 27%);
+  --bg-body:       hsl(210, 40%, 98%);
+  --bg-glass:      rgba(255,255,255,0.75);
+  --text-main:     hsl(222, 47%, 11%);
+  --text-muted:    hsl(215, 16%, 47%);
+  --border:        hsl(214, 32%, 91%);
+  --border-glass:  rgba(255,255,255,0.45);
+  --shadow-glass:  0 8px 32px 0 rgba(31,38,135,0.07);
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --font: 'Outfit', system-ui, sans-serif;
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+body {
+  font-family: var(--font);
+  background: radial-gradient(circle at top right, hsl(161,72%,98%), transparent),
+              radial-gradient(circle at bottom left, hsl(250,84%,98%), transparent),
+              var(--bg-body);
+  color: var(--text-main);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding: 0 0 env(safe-area-inset-bottom);
+}
+
+/* ── Mockup frame & switcher ───────────────────────────────────────── */
+.mockup-meta {
+  background: #1e293b;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  padding: 0.55rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.mockup-meta strong { color: #f1f5f9; margin-right: 4px; }
+.scene-switcher {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+.scene-btn {
+  background: #334155;
+  border: 1px solid #475569;
+  color: #cbd5e1;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all .15s;
+}
+.scene-btn.active, .scene-btn:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+/* ── Shared layout shell ───────────────────────────────────────────── */
+.screen {
+  display: none;
+  flex-direction: column;
+  min-height: calc(100vh - 36px);
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+}
+.screen.active { display: flex; }
+
+/* ────────────────────────────────────────────────────────────────────
+   SCENE A — Landing Page
+──────────────────────────────────────────────────────────────────── */
+.landing-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1.25rem 1.5rem;
+  gap: 0;
+  min-height: calc(100vh - 36px);
+}
+.landing-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.logo-landing {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 0.4rem;
+}
+.tagline {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.selection-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  width: 100%;
+}
+.selection-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-glass);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1rem;
+  cursor: pointer;
+  transition: transform .18s, box-shadow .18s;
+  position: relative;
+  overflow: hidden;
+}
+.selection-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.1); }
+.selection-card:active { transform: scale(0.97); }
+.sel-icon { font-size: 1.8rem; margin-bottom: 0.5rem; display: block; }
+.selection-card h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.35rem; }
+.selection-card p  { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin: 0; }
+.sel-badge {
+  display: inline-block;
+  margin-top: 0.6rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--primary-light);
+  color: var(--primary);
+}
+.sel-badge.accent { background: hsl(250,84%,95%); color: var(--accent); }
+.sel-badge.neutral { background: #f1f5f9; color: var(--text-muted); }
+.sel-badge.help   { background: #fff7ed; color: #c2410c; }
+
+/* NEW: Help card spans full width at bottom */
+.selection-card.help-card {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border: 1.5px solid hsl(32,95%,85%);
+  background: linear-gradient(135deg, #fff7ed 0%, #fffbf5 100%);
+}
+.help-card .sel-icon { font-size: 2rem; margin: 0; flex-shrink: 0; }
+.help-card-text h3 { font-size: 0.9rem; font-weight: 600; }
+.help-card-text p  { font-size: 0.78rem; color: var(--text-muted); line-height: 1.35; }
+.help-card-arrow {
+  margin-left: auto;
+  font-size: 1.2rem;
+  color: #c2410c;
+  flex-shrink: 0;
+}
+
+.landing-footer {
+  margin-top: auto;
+  padding-top: 1.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   SCENE B — Dashboard (stripped for mockup)
+──────────────────────────────────────────────────────────────────── */
+.dashboard-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.logo-small {
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.toolbar {
+  display: flex;
+  gap: 4px;
+}
+.btn-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 5px 8px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: background .15s;
+}
+.btn-action:hover { background: var(--border); }
+.btn-action-icon { font-size: 1.1rem; line-height: 1; }
+.btn-action-label { font-size: 0.58rem; color: var(--text-muted); font-weight: 500; }
+
+/* NEW: Help button in toolbar — highlighted */
+.btn-action.btn-help {
+  background: #fff7ed;
+  border: 1px solid hsl(32,95%,80%);
+}
+.btn-action.btn-help .btn-action-icon { color: #c2410c; }
+.btn-action.btn-help .btn-action-label { color: #c2410c; }
+.btn-action.btn-help:hover { background: hsl(32,95%,90%); }
+
+.dashboard-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+}
+.kpi-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.6rem;
+}
+.kpi-chip {
+  background: white;
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.5rem;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+.kpi-chip .kpi-val { font-size: 1rem; font-weight: 700; }
+.kpi-chip .kpi-lbl { font-size: 0.62rem; color: var(--text-muted); }
+.chart-placeholder {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  flex-direction: column;
+  gap: 6px;
+}
+.editor-stub {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.editor-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+.editor-tab {
+  flex: 1;
+  padding: 0.55rem 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+.editor-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+.editor-content-stub {
+  padding: 0.75rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* tooltip demo */
+.tooltip-demo-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+.field-label { font-size: 0.75rem; color: var(--text-main); font-weight: 500; flex: 1; }
+.field-input-stub {
+  width: 72px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 6px;
+  font-size: 0.75rem;
+  text-align: right;
+  color: var(--text-main);
+}
+.tooltip-trigger-stub {
+  position: relative;
+  cursor: pointer;
+}
+.info-icon {
+  width: 18px;
+  height: 18px;
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.tooltip-trigger-stub:hover .info-icon,
+.tooltip-trigger-stub.active .info-icon {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.tooltip-popup {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 26px;
+  width: 240px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  padding: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-main);
+  z-index: 100;
+}
+.tooltip-trigger-stub.active .tooltip-popup { display: block; }
+.tooltip-popup .tt-rule {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.tt-more-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 6px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+  text-decoration: none;
+}
+.tt-more-link:hover { text-decoration: underline; }
+
+/* ────────────────────────────────────────────────────────────────────
+   SCENE C — Hilfe-Screen
+──────────────────────────────────────────────────────────────────── */
+.help-screen {
+  display: none;
+  flex-direction: column;
+  min-height: calc(100vh - 36px);
+  max-width: 480px;
+  margin: 0 auto;
+}
+.help-screen.active { display: flex; }
+
+.help-topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border: none;
+  border-radius: 99px;
+  padding: 5px 14px 5px 10px;
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.back-btn:hover { background: var(--primary); color: white; }
+.back-btn-arrow { font-size: 1rem; }
+.help-topbar-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  flex: 1;
+}
+.help-topbar-sub {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.help-intro {
+  padding: 1.25rem 1rem 0.5rem;
+  background: linear-gradient(135deg, #fff7ed, #fffbf7);
+  border-bottom: 1px solid hsl(32,95%,90%);
+}
+.help-intro h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+.help-intro p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.help-progress-bar {
+  height: 3px;
+  background: var(--border);
+  margin: 0 1rem 0;
+}
+.help-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.help-cards-list {
+  flex: 1;
+  padding: 0.75rem 1rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  overflow-y: auto;
+}
+
+.help-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: box-shadow .2s;
+}
+.help-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+
+.help-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.help-card-header:active { background: #f8fafc; }
+
+.card-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.card-icon { font-size: 1.3rem; flex-shrink: 0; }
+.card-header-text { flex: 1; min-width: 0; }
+.card-header-text h3 { font-size: 0.88rem; font-weight: 600; line-height: 1.3; }
+.card-header-text .card-teaser { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-chevron {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  transition: transform .25s;
+  flex-shrink: 0;
+}
+.help-card.open .card-chevron { transform: rotate(180deg); }
+
+.help-card-body {
+  display: none;
+  padding: 0 1rem 1rem;
+  border-top: 1px solid var(--border);
+}
+.help-card.open .help-card-body { display: block; }
+
+.help-card-body p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0.75rem 0 0;
+}
+.example-box {
+  margin: 0.75rem 0;
+  background: var(--primary-light);
+  border-left: 3px solid var(--primary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.example-box strong { color: var(--primary); }
+.merksatz {
+  margin-top: 0.75rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #166534;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.warning-box {
+  margin-top: 0.75rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.75rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: #991b1b;
+  display: flex;
+  gap: 6px;
+}
+.tool-hint {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  padding-top: 0.6rem;
+}
+.tool-hint-link {
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+.tool-hint-link:hover { text-decoration: underline; }
+
+/* Fehler-Karte spezial */
+.error-item {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.6rem;
+  background: #fef9f0;
+  border-radius: var(--radius-sm);
+  border: 1px solid #fde68a;
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+.error-item .err-icon { font-size: 1rem; flex-shrink: 0; }
+.error-item strong { color: var(--text-main); }
+.error-item .fix { color: var(--primary); font-weight: 600; }
+
+/* deep link highlight pulse */
+@keyframes highlightPulse {
+  0%   { box-shadow: 0 0 0 0 var(--primary-glow); }
+  70%  { box-shadow: 0 0 0 8px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.help-card.highlighted {
+  animation: highlightPulse 0.9s ease-out;
+  border-color: var(--primary);
+}
+
+/* ── Annotation labels (mockup only) ─────────────────────────────── */
+.annotation {
+  position: relative;
+}
+.annotation-label {
+  position: absolute;
+  background: #7c3aed;
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 99px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 200;
+  top: -10px;
+  right: -4px;
+  letter-spacing: 0.03em;
+}
+.annotation-label.left { right: auto; left: -4px; }
+.annotation-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  background: #f5f3ff;
+  border: 1px dashed #a78bfa;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin: 4px 1rem 0;
+  font-size: 0.7rem;
+  color: #5b21b6;
+  line-height: 1.4;
+}
+.annotation-note::before { content: "💡"; font-size: 0.85rem; flex-shrink: 0; }
+
+</style>
+</head>
+<body>
+
+<!-- ── Mockup Meta Bar ──────────────────────────────────────────────── -->
+<div class="mockup-meta">
+  <span><strong>Mockup:</strong> Anleitung & Hilfe-Screen</span>
+  <span style="color:#64748b;">Mobile (375 px) · Klickbar</span>
+  <div class="scene-switcher">
+    <button class="scene-btn active" onclick="showScene('landing')">① Landing</button>
+    <button class="scene-btn" onclick="showScene('dashboard')">② Dashboard</button>
+    <button class="scene-btn" onclick="showScene('help')">③ Hilfe</button>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SCENE A — Landing Page
+════════════════════════════════════════════════════════════════ -->
+<div class="screen active" id="scene-landing">
+<div class="landing-page">
+  <header class="landing-header">
+    <div class="logo-landing">🌱 Ruhestandsplaner</div>
+    <p class="tagline">Plane heute deine finanzielle Freiheit von morgen.</p>
+  </header>
+
+  <div class="selection-grid">
+    <div class="selection-card annotation" onclick="showScene('dashboard')">
+      <span class="annotation-label left">unverändert</span>
+      <span class="sel-icon">✨</span>
+      <h3>Geführte Planung</h3>
+      <p>Schritt für Schritt zum persönlichen Plan.</p>
+      <span class="sel-badge">Ideal für Einsteiger</span>
+    </div>
+
+    <div class="selection-card annotation" onclick="showScene('dashboard')">
+      <span class="annotation-label">unverändert</span>
+      <span class="sel-icon">🚀</span>
+      <h3>Beispiel ansehen</h3>
+      <p>Direkt mit Beispielwerten starten.</p>
+      <span class="sel-badge accent">Schnellstart</span>
+    </div>
+
+    <div class="selection-card annotation">
+      <span class="annotation-label left">unverändert</span>
+      <span class="sel-icon">📂</span>
+      <h3>Plan laden</h3>
+      <p>Dort weitermachen, wo ich aufgehört habe.</p>
+      <span class="sel-badge neutral">Gespeichert</span>
+    </div>
+
+    <!-- NEW: 4th tile → Help -->
+    <div class="selection-card help-card annotation" onclick="showScene('help')">
+      <span class="annotation-label">NEU</span>
+      <span class="sel-icon">📖</span>
+      <div class="help-card-text">
+        <h3>Hilfe & Wissen</h3>
+        <p>Wie funktioniert das Tool? Was bedeuten die Felder?</p>
+        <span class="sel-badge help">Vor dem Start lesen</span>
+      </div>
+      <span class="help-card-arrow">→</span>
+    </div>
+  </div>
+
+  <footer class="landing-footer">
+    🔒 Ihre Daten werden nur lokal in Ihrem Browser verarbeitet.
+  </footer>
+</div>
+<div class="annotation-note">Vierte Kachel nimmt die volle Breite ein und hebt sich farblich ab — signalisiert "anderer Typ von Aktion".</div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SCENE B — Dashboard (stripped mockup)
+════════════════════════════════════════════════════════════════ -->
+<div class="screen" id="scene-dashboard">
+  <header class="dashboard-nav">
+    <div class="logo-small">🌱 Ruhestandsplaner</div>
+    <div class="toolbar">
+      <button class="btn-action">
+        <span class="btn-action-icon">✨</span>
+        <span class="btn-action-label">Wizard</span>
+      </button>
+      <button class="btn-action">
+        <span class="btn-action-icon">💾</span>
+        <span class="btn-action-label">Speichern</span>
+      </button>
+      <button class="btn-action">
+        <span class="btn-action-icon">📂</span>
+        <span class="btn-action-label">Laden</span>
+      </button>
+      <button class="btn-action">
+        <span class="btn-action-icon">🔄</span>
+        <span class="btn-action-label">Neu</span>
+      </button>
+      <!-- NEW: Help Button -->
+      <button class="btn-action btn-help annotation" onclick="showScene('help')" style="position:relative">
+        <span class="annotation-label">NEU</span>
+        <span class="btn-action-icon">📖</span>
+        <span class="btn-action-label" style="color:#c2410c;">Hilfe</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="dashboard-body">
+    <div class="kpi-strip">
+      <div class="kpi-chip">
+        <div class="kpi-val" style="color:#16a34a;">482.300 €</div>
+        <div class="kpi-lbl">Vermögen</div>
+      </div>
+      <div class="kpi-chip">
+        <div class="kpi-val" style="color:#dc2626;">0 €</div>
+        <div class="kpi-lbl">Lücke</div>
+      </div>
+      <div class="kpi-chip">
+        <div class="kpi-val" style="color:#16a34a;">12,4 J.</div>
+        <div class="kpi-lbl">Reserve</div>
+      </div>
+    </div>
+
+    <div class="chart-placeholder">
+      <span style="font-size:1.8rem">📈</span>
+      <span>Vermögensverlauf (Chart)</span>
+    </div>
+
+    <div class="editor-stub">
+      <div class="editor-tabs">
+        <div class="editor-tab active">Sparphase</div>
+        <div class="editor-tab">Rentenphase</div>
+        <div class="editor-tab">Strategie</div>
+      </div>
+      <div class="editor-content-stub">
+        <!-- Tooltip Demo -->
+        <div class="tooltip-demo-row">
+          <span class="field-label">Rendite Ansparphase</span>
+          <span class="field-input-stub">5,0 %</span>
+          <div class="tooltip-trigger-stub annotation" id="tt1" onclick="toggleTooltip('tt1')" style="position:relative">
+            <span class="annotation-label">Neuer Tooltip</span>
+            <div class="info-icon">i</div>
+            <div class="tooltip-popup">
+              <strong>Was ist das?</strong><br>
+              Wie viel dein Geld pro Jahr durchschnittlich wächst – also die erwartete Jahresrendite dieses Topfes.<br>
+              <div class="tt-rule">📌 Daumenregel: Breit gestreutes ETF-Portfolio → 5–7 %. Tagesgeld → 2–3 %.</div>
+              <a class="tt-more-link" onclick="deepLink('karte-3')">Mehr dazu → Zins & Zinseszins ↗</a>
+            </div>
+          </div>
+        </div>
+        <div class="tooltip-demo-row">
+          <span class="field-label">Rendite Rentenphase</span>
+          <span class="field-input-stub">4,0 %</span>
+          <div class="tooltip-trigger-stub" id="tt2" onclick="toggleTooltip('tt2')" style="position:relative">
+            <div class="info-icon">i</div>
+            <div class="tooltip-popup">
+              <strong>Was ist das?</strong><br>
+              Im Ruhestand solltest du sicherer anlegen – weniger Schwankung, etwas weniger Rendite. Deshalb ist dieser Wert meist etwas niedriger.<br>
+              <div class="tt-rule">📌 Typisch: 1–2 Prozentpunkte unter der Ansparphase.</div>
+              <a class="tt-more-link" onclick="deepLink('karte-3')">Mehr dazu → Zins & Zinseszins ↗</a>
+            </div>
+          </div>
+        </div>
+        <div class="tooltip-demo-row">
+          <span class="field-label">Steuerrate</span>
+          <span class="field-input-stub">18,5 %</span>
+          <div class="tooltip-trigger-stub" id="tt3" onclick="toggleTooltip('tt3')" style="position:relative">
+            <div class="info-icon">i</div>
+            <div class="tooltip-popup">
+              <strong>Was ist das?</strong><br>
+              Anteil deiner Kapitalerträge, der ans Finanzamt geht. ETFs haben eine Teilfreistellung – daher sind 18,5 % voreingestellt.<br>
+              <div class="tt-rule">📌 Tagesgeld: 25 %. ETF-Depot: 18,5 %. Lebensversicherung: individuell.</div>
+              <a class="tt-more-link" onclick="deepLink('karte-5')">Mehr dazu → Steuern ↗</a>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:0.68rem;color:var(--text-muted);margin-top:8px;text-align:center;">↑ Tippe auf ⓘ für Felderklärungen</div>
+      </div>
+    </div>
+  </div>
+  <div class="annotation-note">Hilfe-Button in der Kopfleiste ist farblich abgesetzt (warm/orange) — wird nicht mit Aktions-Buttons verwechselt. Tooltips folgen dem neuen 3-Satz-Prinzip mit Deep-Link.</div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SCENE C — Hilfe-Screen
+════════════════════════════════════════════════════════════════ -->
+<div class="help-screen" id="scene-help">
+  <div class="help-topbar">
+    <button class="back-btn" onclick="goBack()">
+      <span class="back-btn-arrow">←</span> Zurück zum Plan
+    </button>
+    <div class="help-topbar-title">Hilfe & Wissen</div>
+    <div class="help-topbar-sub">6 Themen</div>
+  </div>
+
+  <div class="help-intro">
+    <h2>📖 Hilfe & Wissen</h2>
+    <p>Die gesetzliche Rente reicht für die meisten nicht — die Lücke musst du selbst schließen. Dieses Tool hilft dir dabei. Klappe auf, was dich interessiert.</p>
+  </div>
+
+  <div class="help-cards-list" id="help-cards">
+
+    <!-- Karte 1 -->
+    <div class="help-card open" id="karte-1">
+      <div class="help-card-header" onclick="toggleCard('karte-1')">
+        <div class="card-num">1</div>
+        <span class="card-icon">🗺️</span>
+        <div class="card-header-text">
+          <h3>Wie benutze ich dieses Tool?</h3>
+          <span class="card-teaser">Der Ablauf in 4 Schritten</span>
+        </div>
+        <span class="card-chevron">▼</span>
+      </div>
+      <div class="help-card-body">
+        <p>Das Tool führt dich in vier Schritten zu deinem persönlichen Ruhestandsplan:</p>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:0.8rem;">
+            <div style="width:24px;height:24px;background:var(--primary);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.7rem;flex-shrink:0;">1</div>
+            <div><strong>Wizard:</strong> Grunddaten eingeben — Alter, Sparrate, Töpfe. Ca. 5 Minuten.</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:0.8rem;">
+            <div style="width:24px;height:24px;background:var(--primary);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.7rem;flex-shrink:0;">2</div>
+            <div><strong>Dashboard:</strong> Vermögensverlauf und Kennzahlen auf einen Blick.</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:0.8rem;">
+            <div style="width:24px;height:24px;background:var(--primary);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.7rem;flex-shrink:0;">3</div>
+            <div><strong>Anpassen:</strong> Werte ändern, Chart reagiert sofort — einfach ausprobieren.</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:0.8rem;">
+            <div style="width:24px;height:24px;background:var(--primary);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.7rem;flex-shrink:0;">4</div>
+            <div><strong>Speichern:</strong> Plan per Passwort als Datei sichern — kein Server, alles lokal.</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+          <div style="font-size:0.78rem;font-weight:600;margin-bottom:6px;">📊 Den Chart lesen</div>
+          <p style="font-size:0.8rem;">Die Kurve zeigt dein Vermögen Jahr für Jahr. Bleibt sie über null — alles gut. Fällt sie darunter, entsteht eine Lücke. Ganz rechts siehst du, wie viel am Ende übrig bleibt.</p>
+        </div>
+        <div class="merksatz">✅ Du kannst nichts kaputt machen — Werte ändern und schauen, was passiert.</div>
+      </div>
+    </div>
+
+    <!-- Karte 2 — Ruhestand in Phasen -->
+    <div class="help-card" id="karte-2">
+      <div class="help-card-header" onclick="toggleCard('karte-2')">
+        <div class="card-num">2</div>
+        <span class="card-icon">🌅</span>
+        <div class="card-header-text">
+          <h3>Dein Plan in Phasen denken</h3>
+          <span class="card-teaser">Ausgaben schwanken — Sparraten auch</span>
+        </div>
+        <span class="card-chevron">▼</span>
+      </div>
+      <div class="help-card-body">
+        <p>Der Ruhestand ist kein gleichförmiger Block. Dein Bedarf verändert sich — nach oben und nach unten.</p>
+        <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0;">
+          <div style="display:flex;gap:10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 10px;font-size:0.78rem;">
+            <span>🏃</span>
+            <div><strong>Aktiver Ruhestand (60–75)</strong><br>Reisen, Hobbys, Restaurantbesuche — oft <strong>höhere</strong> Ausgaben als erwartet.</div>
+          </div>
+          <div style="display:flex;gap:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 10px;font-size:0.78rem;">
+            <span>🛋️</span>
+            <div><strong>Ruhigerer Ruhestand (75–85)</strong><br>Langsameres Leben, weniger Konsum — Ausgaben oft <strong>niedriger</strong>.</div>
+          </div>
+          <div style="display:flex;gap:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px 10px;font-size:0.78rem;">
+            <span>🏥</span>
+            <div><strong>Später Ruhestand (85+)</strong><br>Pflege, Unterstützung, Heimkosten — Ausgaben können wieder <strong>stark steigen</strong>.</div>
+          </div>
+        </div>
+        <p>Im Tool bildest du das ab, indem du mehrere <strong>Ruhestands-Phasen</strong> einträgst — jede mit eigenem monatlichen Bedarf ab einem bestimmten Alter. Das Prinzip gilt genauso für die Sparphase: Sparraten lassen sich ab einem beliebigen Alter erhöhen, senken oder auf 0 setzen.</p>
+        <div style="display:flex;flex-direction:column;gap:5px;margin:10px 0;font-size:0.78rem;">
+          <div style="display:flex;gap:8px;align-items:center;background:#f8fafc;padding:5px 8px;border-radius:6px;border:1px solid var(--border);">
+            <span>📈</span><span>Sparrate ab 50 erhöhen — Kinder aus dem Haus</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;background:#f8fafc;padding:5px 8px;border-radius:6px;border:1px solid var(--border);">
+            <span>⏸️</span><span>Sparrate ab 63 auf <strong>0 €</strong> — Teilzeit oder Vorruhestand</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;background:#f8fafc;padding:5px 8px;border-radius:6px;border:1px solid var(--border);">
+            <span>📉</span><span>Rentenbedarf ab 80 senken — ruhigere Lebensweise</span>
+          </div>
+        </div>
+        <p style="font-size:0.78rem;color:var(--text-muted);">Neue Phase anlegen: „+ Phase hinzufügen" tippen und das Alter eintragen, ab dem der neue Wert gilt.</p>
+        <p style="margin-top:10px;">Für größere Einmalausgaben — Weltreise, Umbau, neues Auto — gibt es die <strong>„Einmalige Ausgaben"</strong>-Funktion: Betrag und Alter eintragen, der Betrag wird einmalig vom Vermögen abgezogen.</p>
+        <div class="merksatz">✅ Ein realistischer Plan hat mindestens zwei Phasen: einen aktiven Ruhestand mit höherem Bedarf — und einen ruhigeren mit niedrigerem.</div>
+        <div class="tool-hint">🔧 Im Tool: <span class="tool-hint-link" onclick="navigateTo('dashboard','rentenphase')">Rentenphase-Tab → Ruhestands-Phasen &amp; Einmalige Ausgaben</span></div>
+      </div>
+    </div>
+
+    <!-- Karte 3 — Zins & Zinseszins -->
+    <div class="help-card" id="karte-3">
+      <div class="help-card-header" onclick="toggleCard('karte-3')">
+        <div class="card-num">3</div>
+        <span class="card-icon">📈</span>
+        <div class="card-header-text">
+          <h3>Zins & Zinseszins: Zeit ist dein größter Hebel</h3>
+          <span class="card-teaser">Warum Rendite & Laufzeit so wichtig sind</span>
+        </div>
+        <span class="card-chevron">▼</span>
+      </div>
+      <div class="help-card-body">
+        <p>Zins bedeutet: Dein Geld bringt Geld. Im nächsten Jahr wächst nicht nur dein ursprüngliches Kapital, sondern auch der Ertrag des Vorjahres — das nennt sich Zinseszins.</p>
+        <div class="example-box">
+          <strong>200 € / Monat bei 6 % Rendite:</strong><br>
+          10 Jahre sparen → ca. <strong>33.000 €</strong><br>
+          20 Jahre sparen → ca. <strong>92.000 €</strong><br>
+          30 Jahre sparen → ca. <strong>200.000 €</strong>
+        </div>
+        <p>Die letzten 10 Jahre produzieren fast genauso viel wie die ersten 20. Das ist der wichtigste Grund, früh anzufangen.</p>
+        <p style="margin-top:8px;"><strong>Zwei Rendite-Felder im Tool:</strong> In der Ansparphase legst du oft risikoreicher an. Im Ruhestand empfiehlt sich eine konservativere Strategie, damit ein Crash kurz vor der Entnahme nicht alles zunichte macht.</p>
+        <div class="merksatz">✅ Selbst 50 € / Monat mehr über 30 Jahre machen einen Unterschied von über 50.000 €.</div>
+        <div class="tool-hint">🔧 Im Tool: <span class="tool-hint-link" onclick="navigateTo('dashboard','sparphase')">Sparphase-Tab → Rendite Anspar- / Rentenphase</span></div>
+      </div>
+    </div>
+
+    <!-- Karte 4 — Inflation -->
+    <div class="help-card" id="karte-4">
+      <div class="help-card-header" onclick="toggleCard('karte-4')">
+        <div class="card-num">4</div>
+        <span class="card-icon">🌡️</span>
+        <div class="card-header-text">
+          <h3>Inflation: Das unsichtbare Loch</h3>
+          <span class="card-teaser">Warum 2.800 € in 30 Jahren weniger wert sind</span>
+        </div>
+        <span class="card-chevron">▼</span>
+      </div>
+      <div class="help-card-body">
+        <p>Inflation bedeutet: Preise steigen jedes Jahr ein bisschen. Was heute 2.800 € kostet, kostet in 30 Jahren bei 2 % Inflation etwa <strong>5.100 €</strong> — für denselben Lebensstandard.</p>
+        <div class="example-box">
+          <strong>Was du eingibst:</strong> 2.800 € Bedarf (heutige Kaufkraft)<br>
+          <strong>Was das Tool berechnet:</strong> In Jahr 30 braucht es ~5.100 €.<br>
+          <strong>Kaufkraft-Toggle:</strong> Zeigt dein Vermögen in heutigen Euro.
+        </div>
+        <div class="merksatz">✅ Trag deinen Bedarf immer in heutigen Euro ein. Das Tool rechnet die Inflation automatisch drauf.</div>
+        <div class="tool-hint">🔧 Im Tool: <span class="tool-hint-link" onclick="navigateTo('dashboard','strategie')">Strategie-Tab → Inflationsrate</span></div>
+      </div>
+    </div>
+
+    <!-- Karte 5 — Töpfe & Steuern (zusammengeführt) -->
+    <div class="help-card" id="karte-5">
+      <div class="help-card-header" onclick="toggleCard('karte-5')">
+        <div class="card-num">5</div>
+        <span class="card-icon">🏦</span>
+        <div class="card-header-text">
+          <h3>Meine Konten richtig einordnen</h3>
+          <span class="card-teaser">Welches Konto ist ein Topf — und welche Werte trägt man ein?</span>
+        </div>
+        <span class="card-chevron">▼</span>
+      </div>
+      <div class="help-card-body">
+        <p>Ein <strong>Topf</strong> ist jedes Konto oder Depot, das du im Ruhestand selbst anzapfst. Die Tabelle zeigt, welche Werte du jeweils eintragen solltest:</p>
+        <div style="margin:12px 0;">
+          <!-- Header -->
+          <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:4px;font-size:0.68rem;font-weight:700;color:var(--text-muted);padding:0 8px 4px;text-transform:uppercase;letter-spacing:0.03em;">
+            <span>Kontotyp</span><span style="text-align:center;">Rendite</span><span style="text-align:center;">Steuer</span>
+          </div>
+          <!-- ETF -->
+          <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:4px;align-items:center;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px;margin-bottom:5px;font-size:0.78rem;">
+            <div><strong>ETF-Depot</strong></div>
+            <div style="text-align:center;font-weight:700;color:var(--primary);">5–7 %</div>
+            <div style="text-align:center;font-weight:700;color:var(--primary);">18,5 %</div>
+          </div>
+          <!-- Tagesgeld -->
+          <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:4px;align-items:center;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px;margin-bottom:5px;font-size:0.78rem;">
+            <div><strong>Tagesgeld</strong><div style="font-size:0.68rem;color:var(--text-muted);">Festgeld</div></div>
+            <div style="text-align:center;font-weight:700;color:var(--primary);">2–3 %</div>
+            <div style="text-align:center;font-weight:700;color:var(--primary);">25 %</div>
+          </div>
+          <!-- Rentenvers. -->
+          <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:4px;align-items:center;background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:8px;font-size:0.78rem;">
+            <div><strong>Priv. Renten-Vers.</strong></div>
+            <div style="text-align:center;font-weight:700;color:var(--primary);">3–5 %</div>
+            <div style="text-align:center;font-weight:700;color:var(--text-muted);font-size:0.72rem;">individuell</div>
+          </div>
+        </div>
+        <div style="background:#fff7ed;border:1px solid hsl(32,95%,80%);border-radius:8px;padding:8px 10px;font-size:0.78rem;margin-top:4px;">
+          <strong>⚠️ Nicht als Topf:</strong> Gesetzliche Rente und betriebliche Altersvorsorge sind feste monatliche Zahlungen — die gehören unter <strong>„Rentenquellen"</strong>, nicht als Topf.
+        </div>
+        <div class="merksatz">✅ Steuer auf 0 zu lassen verfälscht das Ergebnis erheblich — auch eine Schätzung ist besser als nichts.</div>
+        <div class="tool-hint">🔧 Im Tool: <span class="tool-hint-link" onclick="navigateTo('dashboard','sparphase')">Sparphase-Tab → Steuerrate</span> &amp; <span class="tool-hint-link" onclick="navigateTo('dashboard','rentenphase')">Rentenphase-Tab → Rentenquellen</span></div>
+      </div>
+    </div>
+
+    <!-- Karte 6 — Typische Fehler -->
+    <div class="help-card" id="karte-6">
+      <div class="help-card-header" onclick="toggleCard('karte-6')">
+        <div class="card-num" style="background:#fef2f2;color:#dc2626;">6</div>
+        <span class="card-icon">⚠️</span>
+        <div class="card-header-text">
+          <h3>Typische Fehler — und wie du sie vermeidest</h3>
+          <span class="card-teaser">Die 5 häufigsten Fallstricke</span>
+        </div>
+        <span class="card-chevron">▼</span>
+      </div>
+      <div class="help-card-body">
+        <div class="error-item">
+          <span class="err-icon">📈</span>
+          <div><strong>Rendite zu optimistisch</strong><br>10 %+ klingt verlockend, ist aber unrealistisch. <span class="fix">→ Bleib bei 5–7 % für ein ETF-Portfolio.</span></div>
+        </div>
+        <div class="error-item">
+          <span class="err-icon">🌡️</span>
+          <div><strong>Inflation auf 0 % setzen</strong><br>Das unterschätzt deinen zukünftigen Bedarf massiv. <span class="fix">→ Mindestens 2 % einplanen.</span></div>
+        </div>
+        <div class="error-item">
+          <span class="err-icon">💸</span>
+          <div><strong>Steuer weglassen</strong><br>Ohne Steuer sieht der Plan besser aus als er ist. <span class="fix">→ Immer ausfüllen, auch wenn du es schätzen musst.</span></div>
+        </div>
+        <div class="error-item">
+          <span class="err-icon">🎂</span>
+          <div><strong>Entnahme-Ende zu früh</strong><br>„Bis 80" klingt lang — aber viele werden 90+. <span class="fix">→ Planungshorizont mindestens bis 90, besser 95.</span></div>
+        </div>
+        <div class="error-item">
+          <span class="err-icon">🧾</span>
+          <div><strong>Bruttorente statt Nettorente</strong><br>Aus dem Rentenbescheid steht der Bruttobetrag. <span class="fix">→ Ca. 15–20 % abziehen für Steuern & Krankenversicherung.</span></div>
+        </div>
+        <div class="warning-box">⚠️ Dieses Tool ist kein Ersatz für eine professionelle Finanzberatung. Es hilft dir, Größenordnungen zu verstehen und Szenarien durchzuspielen.</div>
+      </div>
+    </div>
+
+  </div><!-- /help-cards-list -->
+  <div class="annotation-note">Zurück-Button ist immer sticky oben sichtbar. Fortschrittsbalken motiviert. Jede Karte ist für sich abgeschlossen — kein Scrollen nötig vor dem Aufklappen.</div>
+</div><!-- /help-screen -->
+
+
+<script>
+let previousScene = 'landing';
+let currentScene  = 'landing';
+
+// Tab that should be activated when returning to dashboard
+let pendingTab = null;
+
+function showScene(id) {
+  document.querySelectorAll('.screen, .help-screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.scene-btn').forEach((b,i) => {
+    b.classList.toggle('active', ['landing','dashboard','help'][i] === id);
+  });
+  previousScene = currentScene;
+  currentScene  = id;
+  const el = document.getElementById('scene-' + id);
+  if (el) {
+    el.classList.add('active');
+    el.scrollTop = 0;
+  }
+  // Apply pending tab switch when arriving at dashboard
+  if (id === 'dashboard' && pendingTab) {
+    highlightTab(pendingTab);
+    pendingTab = null;
+  }
+}
+
+// Navigate to dashboard and highlight a specific editor tab
+function navigateTo(scene, tab) {
+  pendingTab = tab || null;
+  showScene(scene);
+}
+
+// Highlight an editor tab in the mockup dashboard
+function highlightTab(tab) {
+  document.querySelectorAll('.editor-tab').forEach(t => t.classList.remove('active'));
+  const labels = { sparphase: 'Sparphase', rentenphase: 'Rentenphase', strategie: 'Strategie' };
+  document.querySelectorAll('.editor-tab').forEach(t => {
+    if (t.textContent.trim() === labels[tab]) t.classList.add('active');
+  });
+}
+
+function goBack() {
+  showScene(previousScene === 'help' ? 'dashboard' : (previousScene || 'dashboard'));
+}
+
+function toggleCard(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function deepLink(cardId) {
+  showScene('help');
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  if (!card.classList.contains('open')) card.classList.add('open');
+  card.classList.add('highlighted');
+  setTimeout(() => card.classList.remove('highlighted'), 900);
+  setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+}
+
+function toggleTooltip(id) {
+  const el = document.getElementById(id);
+  const wasActive = el.classList.contains('active');
+  document.querySelectorAll('.tooltip-trigger-stub').forEach(t => t.classList.remove('active'));
+  if (!wasActive) el.classList.add('active');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.tooltip-trigger-stub')) {
+    document.querySelectorAll('.tooltip-trigger-stub').forEach(t => t.classList.remove('active'));
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "name": "ruhestandsplaner",
+  "version": "1.0.0",
+  "description": "Ein Tool zur Ruhestandsplanung von Mathias Böhme",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
+  },
+  "keywords": [],
+  "author": "Mathias Böhme",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@electron-forge/cli": "^7.11.1",
+    "@electron-forge/maker-squirrel": "^7.11.1",
+    "electron": "^40.8.0"
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {},
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "Ruhestandsplaner"
+          }
+        }
+      ]
+    }
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.1"
+  }
+}
