@@ -6,6 +6,16 @@ Ein modernes, privatsphäre-fokussiertes Tool zur bankunabhängigen Ruhestandspl
 ![Version](https://img.shields.io/badge/Version-1.0.0-green)
 ![Datenschutz](https://img.shields.io/badge/Datenschutz-Lokal--First-success)
 
+## 📸 Impressionen
+
+| Landing Page | Dashboard & Chart |
+|:---:|:---:|
+| ![Landing Page](docs/images/landing_page.png) | ![Dashboard](docs/images/dashboard_overview.png) |
+
+| Editor (Anpassung) | Data Details & Reality Check |
+|:---:|:---:|
+| ![Editor](docs/images/editor_detail.png) | ![Table & Reality Check](docs/images/table_details.png) |
+
 ## ✨ Features
 
 - **Multi-Asset-Simulation:** Verwalten Sie verschiedene Töpfe (ETF-Depots, Sparkonten, etc.) mit individuellen Zinssätzen für Spar- und Rentenphase.
