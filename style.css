@@ -102,8 +102,8 @@ p {
     height: 100vh;
     /* Fallback for older browsers */
     height: 100dvh;
-    height: -webkit-fill-available;
-    /* iOS specific fix */
+    /* -webkit-fill-available entfernt: berechnet auf iPhone 12 Mini / SE
+       beim ersten Rendern zu groß → Footer rutscht unter den Viewport */
     overflow: hidden;
     background: white;
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
@@ -477,6 +477,8 @@ p {
 @media (max-width: 600px) {
     .editor-body {
         padding: 0.75rem 0.5rem;
+        min-height: 200px;
+        /* Reduziert von 400px — verhindert Overflow auf iPhone 12 Mini/SE */
     }
 }
 
@@ -526,9 +528,9 @@ p {
     .landing-page {
         padding: 1rem;
         justify-content: flex-start;
-        /* Fix for top-clipping when content exceeds height */
-        overflow-y: hidden;
-        /* Try to force no scroll */
+        /* overflow-y:hidden entfernt — hat Inhalte unterhalb Viewport
+           auf kleinen Screens (iPhone 12 Mini/SE) unsichtbar gemacht */
+        overflow-y: auto;
     }
 }
 
@@ -569,7 +571,7 @@ p {
     .landing-page {
         padding: 0.5rem;
         justify-content: flex-start;
-        overflow-y: hidden;
+        overflow-y: auto;
     }
 
     .landing-header {
@@ -1116,6 +1118,7 @@ tr.expanded .expand-icon {
     grid-template-columns: 110px 1fr 110px;
     align-items: center;
     padding: 0 1.25rem;
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
     border-top: 1px solid var(--border);
     background: white;
     z-index: 50;
