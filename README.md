@@ -50,6 +50,28 @@ npm run make
 ```
 Die fertige `setup.exe` findest du anschließend im Ordner `out/make/`.
 
+### 📱 iPhone / iPad – Als App auf dem Homescreen ablegen
+
+Die Web-Version lässt sich auf dem iPhone oder iPad ganz einfach wie eine richtige App nutzen – auch ohne Internetverbindung:
+
+1. Die Seite in **Safari** öffnen.
+2. Unten auf das **Teilen-Symbol** tippen (das Viereck mit dem Pfeil nach oben ↑).
+3. Im Menü nach unten scrollen und **„Zum Home-Bildschirm"** antippen.
+4. Einen Namen vergeben und auf **„Hinzufügen"** tippen.
+
+Die App erscheint danach wie jede andere App auf dem Homescreen und lässt sich direkt darüber starten – ganz ohne Browser-Adressleiste.
+
+> **Hinweis:** Da alle Daten lokal im Gerät gespeichert bleiben, funktioniert das Tool auch offline problemlos.
+
+### Desktop-Version bauen
+Das Projekt nutzt **Electron** und **Electron Forge**:
+```bash
+cd retirement_planner_desktop
+npm install
+npm run make
+```
+Die fertige `setup.exe` findest du anschließend im Ordner `out/make/`.
+
 ## 🛠 Technologien
 
 - **Frontend:** Vanilla JS (ES6 modules), HTML5, CSS3 (Glassmorphism Design)
