@@ -1,4 +1,5 @@
 export function calculateSimulation(data) {
+    if (data.pensions) console.log(`[Simulation] Calculating with ${data.pensions.length} pensions`);
     const results = [];
     const currentYear = new Date().getFullYear();
 
@@ -20,15 +21,15 @@ export function calculateSimulation(data) {
         let yearlySavings = 0;
         let yearlyExpenses = 0;
         let yearlyPension = 0;
-        let yearlyRentalIncome = 0;
         let yearlyGap = 0;
         let yearlyWithdrawalNeeded = 0;
         let oneTimePayment = 0;
         let totalWealth = 0;
+        let currentExpenseLevel = 0;
 
         // 1. Apply Interest
         currentPots.forEach(pot => {
-            const interestRate = isRetirement ? pot.interestRateRetirement : pot.interestRate;
+            const interestRate = pot.interestRate || 0;
             pot.value += pot.value * (interestRate / 100);
         });
 
@@ -81,22 +82,13 @@ export function calculateSimulation(data) {
             currentPots.forEach(pot => {
                 let monthlySave = 0;
 
-                // Tiered Savings Phases (Open-ended)
                 if (pot.savingsPhases && pot.savingsPhases.length > 0) {
                     const applicable = [...pot.savingsPhases]
                         .filter(p => age >= p.fromAge)
                         .sort((a, b) => b.fromAge - a.fromAge);
                     if (applicable.length > 0) monthlySave = Number(applicable[0].amount) || 0;
-                } else {
-                    // Legacy fallback
-                    monthlySave = pot.monthlyContribution || 0;
                 }
 
-                if (pot.contributionIncrease) {
-                    monthlySave = monthlySave * Math.pow(1 + pot.contributionIncrease / 100, yearIndex);
-                } else if (data.savingsDynamic) {
-                    monthlySave = monthlySave * Math.pow(1.02, yearIndex);
-                }
                 const annualSave = monthlySave * 12;
                 pot.value += annualSave;
                 yearlySavings += annualSave;
@@ -106,20 +98,10 @@ export function calculateSimulation(data) {
 
         // 4. Expenses & Gap Calculation (Retirement Phase)
         if (isRetirement) {
-            let currentExpenseLevel = data.retirementExpenses;
-
-            // Check retirementPhases first (Open-ended)
+            currentExpenseLevel = 0;
             if (data.retirementPhases && data.retirementPhases.length > 0) {
                 const applicable = [...data.retirementPhases]
                     .filter(p => age >= p.fromAge)
-                    .sort((a, b) => b.fromAge - a.fromAge);
-                if (applicable.length > 0) {
-                    currentExpenseLevel = applicable[0].monthlyAmount;
-                }
-            } else if (data.expenseAdjustments && data.expenseAdjustments.length > 0) {
-                // Legacy fallback
-                const applicable = data.expenseAdjustments
-                    .filter(a => a.fromAge <= age)
                     .sort((a, b) => b.fromAge - a.fromAge);
                 if (applicable.length > 0) {
                     currentExpenseLevel = applicable[0].monthlyAmount;
@@ -138,38 +120,12 @@ export function calculateSimulation(data) {
                 const pensionGrowthFactor = Math.pow(1 + growth / 100, growthIndex);
                 let amount = Number(p.amount) || 0;
 
-                // Dynamic Early Retirement Penalty for State Pension
-                if (p.id === 'state' && p.applyPenalty && data.retirementAge < 67) {
-                    const yearsEarly = 67 - data.retirementAge;
-                    const penaltyFactor = Math.min(14.4, yearsEarly * 3.6) / 100;
-                    amount = amount * (1 - penaltyFactor);
-                }
+
 
                 return sum + (amount * 12) * pensionGrowthFactor;
             }, 0);
 
-            // Separate Rental Incomes (for dynamic table)
-            const rentalDetails = (data.rentalIncomes || []).map(p => {
-                const startAge = p.startAge !== undefined ? +p.startAge : data.retirementAge;
-                let nominalAmount = 0;
-                let netAmount = 0;
-                if (age >= startAge) {
-                    const growth = Number(p.growth) || 0;
-                    const startAge = p.startAge !== undefined ? p.startAge : data.retirementAge;
-                    const growthIndex = Math.max(0, age - startAge);
-                    const pensionGrowthFactor = Math.pow(1 + growth / 100, growthIndex);
-
-                    let baseAmount = Number(p.amount) || 0;
-
-                    nominalAmount = (baseAmount * 12) * pensionGrowthFactor;
-                    const taxRate = Number(p.taxRate) || 0;
-                    netAmount = nominalAmount * (1 - taxRate / 100);
-                }
-                return { label: p.label, nominalAmount, netAmount };
-            });
-
-            yearlyRentalIncome = rentalDetails.reduce((sum, r) => sum + r.netAmount, 0);
-            yearlyGap = Math.max(0, nominalExpenses - (yearlyPension + yearlyRentalIncome));
+            yearlyGap = Math.max(0, nominalExpenses - yearlyPension);
 
             // Per-pot Tax Logic
             // If we have a net gap, we need to withdraw a gross amount that covers it after tax.
@@ -276,10 +232,9 @@ export function calculateSimulation(data) {
             }
         }
 
-        // Pre-calculate details for the table
         const incomeDetails = [];
         if (isRetirement) {
-            const allIncomes = [...(data.pensions || []), ...(data.rentalIncomes || [])];
+            const allIncomes = (data.pensions || []);
             allIncomes.forEach(p => {
                 const startAge = p.startAge !== undefined ? +p.startAge : data.retirementAge;
                 if (age >= startAge) {
@@ -288,12 +243,7 @@ export function calculateSimulation(data) {
                     const pensionGrowthFactor = Math.pow(1 + growth / 100, growthIndex);
                     let amount = Number(p.amount) || 0;
 
-                    // Apply Early Retirement Penalty for Detail View
-                    if (p.id === 'state' && p.applyPenalty && data.retirementAge < 67) {
-                        const yearsEarly = 67 - data.retirementAge;
-                        const penaltyFactor = Math.min(14.4, yearsEarly * 3.6) / 100;
-                        amount = amount * (1 - penaltyFactor);
-                    }
+
 
                     incomeDetails.push({
                         label: p.label,
@@ -304,6 +254,9 @@ export function calculateSimulation(data) {
             });
         }
 
+        // Currently active expense base for this year
+        const activeExpenseBase = isRetirement ? (currentExpenseLevel || data.retirementExpenses) * 12 : 0;
+
         const wealthBefore = results.length > 0 ? results[results.length - 1].totalWealth : data.pots.reduce((sum, p) => sum + (p.value || 0), 0);
 
         // Calculate Interest Gain for this year (simplified estimate based on end-of-year value minus inputs)
@@ -311,7 +264,7 @@ export function calculateSimulation(data) {
         let yearlyInterest = 0;
         currentPots.forEach((pot, i) => {
             const potBefore = (results.length > 0 ? results[results.length - 1].pots[i].value : (data.pots[i].value || 0));
-            const interestRate = isRetirement ? pot.interestRateRetirement : pot.interestRate;
+            const interestRate = (isRetirement && pot.interestRateRetirement !== undefined) ? pot.interestRateRetirement : (pot.interestRate || 0);
             yearlyInterest += potBefore * (interestRate / 100);
         });
 
@@ -325,7 +278,6 @@ export function calculateSimulation(data) {
             realWealth: totalWealth / inflationFactor,
             withdrawal: yearlyWithdrawalNeeded,
             pension: yearlyPension,
-            rentalIncome: yearlyRentalIncome,
             expenses: yearlyExpenses,
             gap: yearlyGap,
             savings: yearlySavings,
@@ -334,8 +286,8 @@ export function calculateSimulation(data) {
             // New Detail Fields
             incomeDetails,
             expenseBreakdown: {
-                base: (isRetirement ? (data.retirementExpenses * 12) : 0),
-                inflationEffect: yearlyExpenses - (isRetirement ? (data.retirementExpenses * 12) : 0)
+                base: (isRetirement && data.retirementPhases && data.retirementPhases.length > 0) ? (data.retirementPhases[0].monthlyAmount * 12) : 0,
+                inflationEffect: yearlyExpenses - ((isRetirement && data.retirementPhases && data.retirementPhases.length > 0) ? (data.retirementPhases[0].monthlyAmount * 12) : 0)
             },
             wealthChange: {
                 start: wealthBefore,

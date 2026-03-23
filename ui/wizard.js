@@ -66,23 +66,31 @@ export const createWizard = (app) => ({
                 <div class="wz-form-card">
                     <div class="wz-field">
                         <label>Dein aktuelles Alter</label>
-                        <input type="number" id="inp-currentAge" value="${data.currentAge}" min="18" max="100" oninput="app.updateWizardPreview()">
+                        <div class="hybrid-input-wrapper">
+                            <button class="hybrid-spin-btn minus" onclick="app.adjustValue(this, -1)">−</button>
+                            <input type="number" id="inp-currentAge" value="${data.currentAge}" oninput="app.updateWizardPreview()" min="1" max="120">
+                            <button class="hybrid-spin-btn plus" onclick="app.adjustValue(this, 1)">+</button>
+                        </div>
                     </div>
                     <div class="wz-field">
                         <label>Geplantes Rentenalter</label>
-                        <input type="number" id="inp-retirementAge" value="${data.retirementAge}" min="50" max="100" oninput="app.updateWizardPreview()">
+                        <div class="hybrid-input-wrapper">
+                            <button class="hybrid-spin-btn minus" onclick="app.adjustValue(this, -1)">−</button>
+                            <input type="number" id="inp-retirementAge" value="${data.retirementAge}" oninput="app.updateWizardPreview()" min="1" max="120">
+                            <button class="hybrid-spin-btn plus" onclick="app.adjustValue(this, 1)">+</button>
+                        </div>
                     </div>
                     <div class="wz-field">
                         <label>Betrachtung bis Alter</label>
-                        <input type="number" id="inp-endAge" value="${data.endAge}" min="70" max="120" oninput="app.updateWizardPreview()">
+                        <div class="hybrid-input-wrapper">
+                            <button class="hybrid-spin-btn minus" onclick="app.adjustValue(this, -1)">−</button>
+                            <input type="number" id="inp-endAge" value="${data.endAge}" oninput="app.updateWizardPreview()" min="1" max="120">
+                            <button class="hybrid-spin-btn plus" onclick="app.adjustValue(this, 1)">+</button>
+                        </div>
                         <span class="wz-hint">Für wie lange soll dein Geld reichen?</span>
                     </div>
                 </div>
-                <div id="wz-early-ret-hint" style="display: ${data.retirementAge < 67 ? 'block' : 'none'}; margin-bottom: 1rem;">
-                    <div class="wz-info-box" style="background: #fffbeb; border: 1px dashed #f59e0b; color: #92400e;">
-                        <strong>⚠️ Frührente geplant:</strong> Mit ${data.retirementAge} Jahren gehst du vor der Regelaltersgrenze (67) in Rente. Beachte, dass dies meist zu lebenslangen Abzügen bei deiner gesetzlichen Rente führt.
-                    </div>
-                </div>
+
                 <div class="wz-info-box">
                     <strong>💡 Zinseszins:</strong> Je länger deine Ansparphase, desto stärker wirkt der Zinseszins zu deinen Gunsten.
                 </div>
@@ -96,9 +104,6 @@ export const createWizard = (app) => ({
                 // Sync pensions and rental incomes if they were at the old retirementAge
                 if (data.pensions) {
                     data.pensions.forEach(p => { if (p.startAge === oldRetirementAge || p.startAge === 67) p.startAge = data.retirementAge; });
-                }
-                if (data.rentalIncomes) {
-                    data.rentalIncomes.forEach(r => { if (r.startAge === oldRetirementAge || r.startAge === 67) r.startAge = data.retirementAge; });
                 }
                 // Sync savings phases end ages if they matched old retirementAge
                 if (data.pots) {
@@ -178,12 +183,14 @@ export const createWizard = (app) => ({
 
                 html += `<div class="wz-pot-tabs" id="pot-tabs">` +
                     data.pots.map((pot, i) => `
-                        <div class="wz-pot-tab ${i === 0 ? 'active' : ''}" id="pot-tab-${i}" onclick="app.switchPotTab(${i})">
+                        <div class="wz-pot-tab pot-color-${i % 5} ${i === 0 ? 'active' : ''}" id="pot-tab-${i}" onclick="app.switchPotTab(${i})">
                             <input type="text" id="pot-name-${i}" value="${pot.name || `Topf ${i + 1}`}"
                                    class="wz-pot-tab-input" placeholder="Topf Name…"
                                    oninput="app.updatePotName(${i}, this.value)">
                         </div>`).join('') +
                     `</div>`;
+
+                // Pot Card Slider Fix: Ensure consistent icons (pots already use 🗑️)
 
                 html += `<div class="wz-carousel" id="pots-carousel">
                             <div class="wz-carousel-inner" id="pots-carousel-inner">`;
@@ -191,15 +198,23 @@ export const createWizard = (app) => ({
                 data.pots.forEach((pot, i) => {
                     html += `
                     <div class="wz-carousel-slide" id="pot-slide-${i}">
-                        <div class="wz-form-card" style="border-top: none; border-radius: 0 0 16px 16px;">
+                        <div class="wz-form-card pot-color-${i % 5}" style="border-top: none; border-radius: 0 0 16px 16px;">
                             <div class="wz-two-col">
                                 <div class="wz-field">
                                     <label>Guthaben (€)</label>
-                                    <input type="number" id="pot-start-${i}" value="${pot.value}" oninput="app.updateWizardPreview()" onfocus="this.value = this.value">
+                                    <div class="hybrid-input-wrapper">
+                                        <button class="hybrid-spin-btn minus" onclick="app.adjustValue(this, -500)">−</button>
+                                        <input type="number" id="pot-start-${i}" value="${pot.value}" oninput="app.updateWizardPreview()" onfocus="this.value = this.value">
+                                        <button class="hybrid-spin-btn plus" onclick="app.adjustValue(this, 500)">+</button>
+                                    </div>
                                 </div>
                                 <div class="wz-field">
                                     <label>Sparrate / Monat (€)</label>
-                                    <input type="number" id="pot-saving-${i}" value="${pot.monthlyContribution}" oninput="app.updateWizardPreview()" onfocus="this.value = this.value">
+                                    <div class="hybrid-input-wrapper">
+                                        <button class="hybrid-spin-btn minus" onclick="app.adjustValue(this, -50)">−</button>
+                                        <input type="number" id="pot-saving-${i}" value="${pot.monthlyContribution || 0}" oninput="app.updateWizardPreview()" step="50">
+                                        <button class="hybrid-spin-btn plus" onclick="app.adjustValue(this, 50)">+</button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -224,11 +239,19 @@ export const createWizard = (app) => ({
                             <div class="wz-two-col wz-muted-inputs">
                                 <div class="wz-field">
                                     <label>Zins Ansparphase (%)</label>
-                                    <input type="number" step="0.1" id="pot-interest-${i}" value="${pot.interestRate}" oninput="app.updateWizardPreview()" onfocus="this.value = this.value">
+                                    <div class="hybrid-input-wrapper">
+                                        <button class="hybrid-spin-btn minus" onclick="app.adjustValue(this, -0.1)">−</button>
+                                        <input type="number" id="pot-interest-${i}" value="${pot.interestRate}" oninput="app.updateWizardPreview()" step="0.1">
+                                        <button class="hybrid-spin-btn plus" onclick="app.adjustValue(this, 0.1)">+</button>
+                                    </div>
                                 </div>
                                 <div class="wz-field">
                                     <label>Zins in Rente (%)</label>
-                                    <input type="number" step="0.1" id="pot-interest-ret-${i}" value="${pot.interestRateRetirement}" oninput="app.updateWizardPreview()" onfocus="this.value = this.value">
+                                    <div class="hybrid-input-wrapper">
+                                        <button class="hybrid-spin-btn minus" onclick="app.adjustValue(this, -0.1)">−</button>
+                                        <input type="number" id="pot-interest-ret-${i}" value="${pot.interestRateRetirement}" oninput="app.updateWizardPreview()" step="0.1">
+                                        <button class="hybrid-spin-btn plus" onclick="app.adjustValue(this, 0.1)">+</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -259,12 +282,15 @@ export const createWizard = (app) => ({
             save: (data) => {
                 data.pots.forEach((pot, i) => {
                     pot.name = document.getElementById(`pot-name-${i}`).value;
-                    pot.value = +document.getElementById(`pot-start-${i}`).value;
+                    const valStr = document.getElementById(`pot-start-${i}`).value;
+                    pot.value = parseFloat(valStr.replace(/\./g, '').replace(',', '.')) || 0;
                     pot.interestRate = +document.getElementById(`pot-interest-${i}`).value;
                     pot.interestRateRetirement = +document.getElementById(`pot-interest-ret-${i}`).value;
                     pot.monthlyContribution = +document.getElementById(`pot-saving-${i}`).value;
                     pot.savingsPhases = [{ fromAge: data.currentAge, toAge: data.retirementAge, amount: pot.monthlyContribution }];
                 });
+                // Explicitly notify state manager to ensure dashboard/simulation is in sync
+                app.stateManager.notify();
             },
             validate: (data) => true
         },
@@ -289,7 +315,7 @@ export const createWizard = (app) => ({
                 </div>
                 <div class="wz-info-box">
                     <strong>Wann ist was sinnvoll?</strong><br>
-                    <strong>Proportional</strong> erhält deine Anlagemischung länger ausgewogen. <strong>Sequenziell</strong> empfiehlt sich, wenn Topf 1 risikoreicher ist (z.B. Aktien) und du ihn zuerst aufbrauchen möchtest.
+                    <strong>Proportional</strong> erhält deine Anlagemischung länger ausgewogen. <strong>Sequenziell</strong> empfiehlt sich, wenn ein Topf risikoreicher ist und du ihn zuerst aufbrauchen möchtest.
                 </div>
             `,
             validate: () => true
@@ -304,26 +330,30 @@ export const createWizard = (app) => ({
                 <div class="wz-form-card" style="border-left: 4px solid var(--accent);">
                     <div class="wz-field">
                         <label>Wunsch-Budget im Ruhestand (€ / Monat)</label>
-                        <input type="number" id="inp-retExpenses" value="${data.retirementExpenses}" min="0" oninput="app.updateWizardPreview()">
+                        <div class="hybrid-input-wrapper">
+                            <button class="hybrid-spin-btn minus" onclick="app.adjustValue(this, -50)">−</button>
+                            <input type="number" id="inp-retExpenses" value="${data.retirementExpenses}" oninput="app.updateWizardPreview()" step="50" min="0">
+                            <button class="hybrid-spin-btn plus" onclick="app.adjustValue(this, 50)">+</button>
+                        </div>
                         <span class="wz-hint">In heutiger Kaufkraft – Inflation wird automatisch berechnet.</span>
                     </div>
                 </div>
 
                 <div class="wz-form-card" style="border-top:4px solid #10b981;">
                     <div class="wz-field">
-                        <label style="color:#10b981;">Gesetzliche Netto-Rente (€/Mo.)</label>
-                        <input type="number" id="pension-amount-0" value="${data.pensions[0].amount}" oninput="app.updateWizardPreview()">
-                    </div>
-
-                    <div id="wz-penalty-box" style="display: ${data.retirementAge < 67 ? 'block' : 'none'}; margin-top: -5px; margin-bottom: 15px; padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
-                        <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; cursor: pointer; color: var(--text-main);">
-                            <input type="checkbox" id="chk-pension-penalty" ${data.pensions[0].applyPenalty ? 'checked' : ''} onchange="app.updateWizardPreview()" style="width: 16px; height: 16px;">
-                            Abzüge für Frührente schätzen (-3,6% pro Jahr vor 67)
-                        </label>
-                        <div id="wz-penalty-calc" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; padding-left: 24px;">
-                            ${data.pensions[0].applyPenalty ? `Voraussichtlicher Abzug: <strong style="color: #e11d48;">-${Math.min(14.4, (67 - data.retirementAge) * 3.6).toFixed(1)}%</strong>` : 'Maximal 14,4% Abzug möglich'}
+                        <label style="color:#10b981;">Voraussichtliche Netto-Rente (€/Mo.)</label>
+                        <div class="hybrid-input-wrapper">
+                            <button class="hybrid-spin-btn minus" onclick="app.adjustValue(this, -50)">−</button>
+                            <input type="number" id="pension-amount-0" value="${data.pensions[0].amount}" oninput="app.updateWizardPreview()" step="50">
+                            <button class="hybrid-spin-btn plus" onclick="app.adjustValue(this, 50)">+</button>
+                        </div>
+                        <div class="wz-hint" style="margin-top: 4px; line-height: 1.3;">
+                            Nutze den Wert der <strong>heutigen</strong> Rentenauskunft ("Voraussichtliche Rente"). 
+                            Zieh ca. 11% für KV/PV ab.
                         </div>
                     </div>
+
+
 
                     <div class="wz-slider-container">
                         <div class="wz-slider-title">💡 Grobe Schätzung (falls keine Auskunft vorliegt)</div>
@@ -349,7 +379,11 @@ export const createWizard = (app) => ({
                 <div class="wz-form-card" style="border-top:4px solid #3b82f6; margin-top: 20px;">
                     <div class="wz-field">
                         <label style="color:#3b82f6;">Betriebliche / Private Rente (€/Mo.)</label>
-                        <input type="number" id="pension-amount-1" value="${data.pensions[1] ? data.pensions[1].amount : 0}" oninput="app.updateWizardPreview()">
+                        <div class="hybrid-input-wrapper">
+                            <button class="hybrid-spin-btn minus" onclick="app.adjustValue(this, -50)">−</button>
+                            <input type="number" id="pension-amount-1" value="${data.pensions[1] ? data.pensions[1].amount : 0}" oninput="app.updateWizardPreview()" step="50">
+                            <button class="hybrid-spin-btn plus" onclick="app.adjustValue(this, 50)">+</button>
+                        </div>
                         <span class="wz-hint">Zusätzliche garantierte Einnahmen</span>
                     </div>
                     <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">
@@ -358,24 +392,24 @@ export const createWizard = (app) => ({
                 </div>
 
                 <div class="wz-hint-box" style="background:#f1f5f9; border-left-color: var(--primary);">
-                    <strong>💡 Wichtiger Hinweis</strong><br>
-                    Gib hier deine <strong>heutige</strong> Rente an. Das Tool rechnet die künftige Inflation automatisch ein.
+                    <strong>💡 Wichtiger Hinweis zur Inflation</strong><br>
+                    Gib hier deine <strong>heutige</strong> Kaufkraft an. Das Tool rechnet die künftige Inflation für deine Ausgaben automatisch ein, sodass die Rente rechnerisch ihren realen Wert behält.
                 </div>
             `,
             save: (data) => {
-                data.retirementExpenses = +document.getElementById('inp-retExpenses').value;
+                const val = +document.getElementById('inp-retExpenses').value;
+                data.retirementExpenses = val;
+                
+                // Sync to retirementPhases for simulation engine
+                data.retirementPhases = [
+                    { fromAge: data.retirementAge, monthlyAmount: val }
+                ];
+
                 data.pensions[0].amount = +document.getElementById(`pension-amount-0`).value;
-
-                // Penalty Flag
-                const applyPenalty = document.getElementById('chk-pension-penalty') ? document.getElementById('chk-pension-penalty').checked : false;
-                data.pensions[0].applyPenalty = applyPenalty;
-                // Note: Penalty is now calculated dynamically in simulation.js
-
                 if (!data.pensions[1]) data.pensions[1] = { id: 'private', label: 'Privat / Betrieblich', amount: 0, growth: 1.5, startAge: data.retirementAge };
                 data.pensions[1].amount = +document.getElementById(`pension-amount-1`).value;
                 data.pensions[1].startAge = data.retirementAge;
 
-                // Initialize default trend if not set
                 if (data.pensions[0].growth === undefined) data.pensions[0].growth = 1.5;
             },
             validate: () => true
@@ -415,15 +449,7 @@ export const createWizard = (app) => ({
             id: 'plan-overview',
             render: (data) => {
                 const totalStartCapital = data.pots.reduce((sum, p) => sum + (p.value || 0), 0);
-                const totalMonthlyPensions = data.pensions.reduce((sum, p) => {
-                    let amount = p.amount || 0;
-                    if (p.id === 'state' && p.applyPenalty && data.retirementAge < 67) {
-                        const yearsEarly = 67 - data.retirementAge;
-                        const penaltyFactor = Math.min(14.4, yearsEarly * 3.6) / 100;
-                        amount = amount * (1 - penaltyFactor);
-                    }
-                    return sum + amount;
-                }, 0);
+                const totalMonthlyPensions = data.pensions.reduce((sum, p) => sum + (p.amount || 0), 0);
                 const totalMonthlySavings = data.pots.reduce((sum, p) => {
                     const currentPhase = p.savingsPhases?.find(ph => data.currentAge >= ph.fromAge && data.currentAge < ph.toAge);
                     return sum + (currentPhase ? currentPhase.amount : 0);

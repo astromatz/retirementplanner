@@ -9,13 +9,14 @@ export const initialState = {
             {
                 name: 'ETF Depot',
                 value: 50000,
-                interestRate: 5.0,
-                interestRateRetirement: 4.0,
+                interestRate: 6.0,
+                interestRateRetirement: 4.5,
                 contributionIncrease: 2.0,
                 taxRate: 18.5, // Standard for ETF with Teilfreistellung
+                _preset: 'etf',
                 savingsPhases: [
-                    { fromAge: 35, amount: 500 },
-                    { fromAge: 50, amount: 1000 }
+                    { fromAge: 35, toAge: 50, amount: 500 },
+                    { fromAge: 50, toAge: 67, amount: 1000 }
                 ]
             }
         ],
@@ -41,9 +42,6 @@ export const initialState = {
         pensions: [
             { id: 'state', label: 'Gesetzlich', amount: 1200, growth: 1.5, startAge: 67, applyPenalty: false },
             { id: 'company', label: 'Betrieblich', amount: 300, growth: 0.5, startAge: 67 }
-        ],
-        rentalIncomes: [
-            { id: 'rental_1', label: 'Mieteinnahme', amount: 800, growth: 1.0, startAge: 67 }
         ],
         hasExpenseChanges: false,
         hasOneTimePayments: false,
@@ -75,7 +73,6 @@ export const emptyState = {
             { id: 'state', label: 'Gesetzlich', amount: 0, growth: 1.5, startAge: 67, applyPenalty: false },
             { id: 'private', label: 'Privat / Betrieblich', amount: 0, growth: 1.5, startAge: 67 }
         ],
-        rentalIncomes: [],
         hasExpenseChanges: false,
         hasOneTimePayments: false,
         showPurchasingPower: false,

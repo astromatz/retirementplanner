@@ -5,6 +5,21 @@ export class EditorRenderer {
         this._lastStructure = null;
     }
 
+    // Helper that renders a styled number input with +/- buttons for mobile
+    // The buttons call app.adjustValue which changes the value and fires 'input' event
+    renderNumberInput(label, className, value, dataAttrs = '', step = 1, min = '', tooltipId = '') {
+        const minAttr = min !== '' ? `min="${min}"` : '';
+        return `
+            <div class="form-group">
+                <label>${label}</label>
+                <div class="hybrid-input-wrapper">
+                    <button class="hybrid-spin-btn minus" onclick="app.adjustValue(this, -${step})">−</button>
+                    <input type="number" step="${step}" ${minAttr} class="${className}" ${dataAttrs} value="${value}">
+                    <button class="hybrid-spin-btn plus" onclick="app.adjustValue(this, ${step})">+</button>
+                </div>
+            </div>`;
+    }
+
     // ─────────────────────────────────────────────────────────────────
     // Public entry point
     // isStructural = true  → full innerHTML rebuild (add/remove phase etc.)
@@ -51,7 +66,6 @@ export class EditorRenderer {
             d.oneTimePayments?.length,
             d.oneTimeExpenses?.length,
             d.pensions?.length,
-            d.rentalIncomes?.length,
         ].join('|');
     }
 
@@ -110,29 +124,9 @@ export class EditorRenderer {
             this._patch(container.querySelector(`.inp-pension-start[data-index="${idx}"]`), p.startAge);
             this._patch(container.querySelector(`.inp-pension-growth[data-index="${idx}"]`), p.growth);
 
-            const chk = container.querySelector(`.inp-pension-penalty[data-index="${idx}"]`);
-            if (chk && document.activeElement !== chk) chk.checked = !!p.applyPenalty;
 
-            const calc = container.querySelector(`.pension-penalty-calc[data-index="${idx}"]`);
-            if (calc) {
-                if (p.id === 'state' && d.retirementAge < 67) {
-                    const penalty = Math.min(14.4, (67 - d.retirementAge) * 3.6);
-                    calc.style.display = 'block';
-                    calc.innerHTML = p.applyPenalty
-                        ? `<span style="color:#e11d48">Effektiv: ${Math.round(p.amount * (1 - penalty / 100))} €</span>`
-                        : `<span style="color:#64748b">Voraussichtlich: -${penalty.toFixed(1)}%</span>`;
-                } else {
-                    calc.style.display = 'none';
-                }
-            }
         });
 
-        (d.rentalIncomes || []).forEach((ri, idx) => {
-            this._patch(container.querySelector(`.inp-rental-label[data-index="${idx}"]`), ri.label);
-            this._patch(container.querySelector(`.inp-rental-amount[data-index="${idx}"]`), ri.amount);
-            this._patch(container.querySelector(`.inp-rental-start[data-index="${idx}"]`), ri.startAge);
-            this._patch(container.querySelector(`.inp-rental-growth[data-index="${idx}"]`), ri.growth ?? 0);
-        });
     }
 
     _patchStrategie(container, d, results) {
@@ -151,7 +145,7 @@ export class EditorRenderer {
             const commentEl = container.querySelector('.security-check-commentary');
             if (ratioEl) ratioEl.textContent = sc.scoreDisplay;
             if (statusEl) { statusEl.textContent = sc.statusText; statusEl.style.color = sc.statusColor; }
-            if (commentEl) commentEl.textContent = sc.commentary;
+            if (commentEl) commentEl.innerHTML = sc.commentary; // Use innerHTML so HTML markup renders
             if (cardEl) {
                 cardEl.style.borderLeftColor = sc.statusColor;
                 cardEl.style.background = sc.statusColor + '18';
@@ -172,8 +166,8 @@ export class EditorRenderer {
             htmlPots += `
             <div id="acc-spar-pots" class="accordion-section sub ${this.app.isExpanded('acc-spar-pots') ? 'expanded' : ''}">
                 <button class="accordion-header sub" onclick="app.toggleAccordion(this)">🏦 Ihre Anlage-Töpfe</button>
-                <div class="accordion-content">
-                    <div class="card" style="border-left:4px solid var(--primary); position:relative; margin-bottom:0;">
+                 <div class="accordion-content">
+                    <div class="card pot-color-${potIdx % 5}" style="position:relative; margin-bottom:0;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:2px solid #e2e8f0;">
                             <button class="btn btn-icon btn-prev-pot" ${potIdx === 0 ? 'disabled style="opacity:0.3;"' : ''}>◀</button>
                             <div style="text-align:center; flex:1;">
@@ -188,10 +182,10 @@ export class EditorRenderer {
             (currentPot.savingsPhases || []).forEach((phase, pIdx) => {
                 htmlPots += `
                 <div class="input-grid-2" style="margin-bottom:8px; padding-bottom:4px; border-bottom: 1px dotted #e2e8f0;">
-                    <div class="form-group" style="margin:0;"><label>Ab Alter</label><input type="number" min="0" max="150" class="inp-phase-from" data-pot="${potIdx}" data-phase="${pIdx}" value="${phase.fromAge}"></div>
+                    ${this.renderNumberInput('Ab Alter', 'inp-phase-from', phase.fromAge, `data-pot="${potIdx}" data-phase="${pIdx}"`, 1, 0)}
                     <div style="display:flex; gap:8px; align-items:end;">
-                        <div class="form-group" style="margin:0; flex:1;"><label>Rate (€)</label><input type="number" min="0" step="10" class="inp-phase-amount" data-pot="${potIdx}" data-phase="${pIdx}" value="${phase.amount}"></div>
-                        <button class="btn btn-icon delete btn-remove-phase" data-pot="${potIdx}" data-phase="${pIdx}" style="padding:4px; margin-bottom:2px;" ${currentPot.savingsPhases.length === 1 ? 'disabled' : ''}>🗑️</button>
+                        ${this.renderNumberInput('Rate (€)', 'inp-phase-amount', phase.amount, `data-pot="${potIdx}" data-phase="${pIdx}"`, 50, 0)}
+                        <button class="btn btn-icon delete btn-remove-phase" data-pot="${potIdx}" data-phase="${pIdx}" style="padding:4px; margin-bottom:12px;" ${currentPot.savingsPhases.length === 1 ? 'disabled' : ''}>🗑️</button>
                     </div>
                 </div>`;
             });
@@ -199,12 +193,12 @@ export class EditorRenderer {
             htmlPots += `
                     <button class="btn btn-sm btn-outline btn-add-phase" data-pot="${potIdx}" style="width:100%; font-size:0.75rem; padding:4px;">+ Phase hinzufügen</button>
                 </div>
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(65px, 1fr)); gap:6px;">
-                    <div class="form-group" style="margin:0;"><label style="font-size:0.65rem">Start (€) <span class="tooltip-trigger" data-tooltip-id="tt-pot-start">ℹ️<span class="tooltip-content" id="tt-pot-start">Der aktuelle Wert dieses Topfes.</span></span></label><input type="number" min="0" step="100" class="inp-pot-value" data-index="${potIdx}" value="${currentPot.value}" style="padding:2px 6px; font-size:0.8rem;"></div>
-                    <div class="form-group" style="margin:0;"><label style="font-size:0.65rem">± (%) <span class="tooltip-trigger" data-tooltip-id="tt-pot-dyn">ℹ️<span class="tooltip-content" id="tt-pot-dyn">Jährliche Steigerung der Sparrate für diesen Topf.</span></span></label><input type="number" step="0.1" min="-20" max="50" class="inp-pot-dynamic" data-index="${potIdx}" value="${currentPot.contributionIncrease || 0}" style="padding:2px 6px; font-size:0.8rem;"></div>
-                    <div class="form-group" style="margin:0;"><label style="font-size:0.65rem">Zins A. <span class="tooltip-trigger" data-tooltip-id="tt-pot-int-a">ℹ️<span class="tooltip-content" id="tt-pot-int-a">Erwartete Rendite während der Ansparphase.</span></span></label><input type="number" step="0.1" min="-20" max="50" class="inp-pot-interest" data-index="${potIdx}" value="${currentPot.interestRate}" style="padding:2px 6px; font-size:0.8rem;"></div>
-                    <div class="form-group" style="margin:0;"><label style="font-size:0.65rem">Zins E. <span class="tooltip-trigger" data-tooltip-id="tt-pot-int-e">ℹ️<span class="tooltip-content" id="tt-pot-int-e">Erwartete Rendite während der Entnahmephase.</span></span></label><input type="number" step="0.1" min="-20" max="50" class="inp-pot-interest-ret" data-index="${potIdx}" value="${currentPot.interestRateRetirement}" style="padding:2px 6px; font-size:0.8rem;"></div>
-                    <div class="form-group" style="margin:0;"><label style="font-size:0.65rem">Steuer <span class="tooltip-trigger" data-tooltip-id="tt-pot-tax">ℹ️<span class="tooltip-content" id="tt-pot-tax">Individueller Steuersatz für diesen Topf bei Entnahme.</span></span></label><input type="number" step="0.1" min="0" max="100" class="inp-pot-tax-rate" data-index="${potIdx}" value="${currentPot.taxRate || data.withdrawalTaxRate || 0}" style="padding:2px 6px; font-size:0.8rem;"></div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    ${this.renderNumberInput('Start (€)', 'inp-pot-value', currentPot.value, `data-index="${potIdx}"`, 500, 0, 'tt-pot-start')}
+                    ${this.renderNumberInput('± (%)', 'inp-pot-dynamic', currentPot.contributionIncrease || 0, `data-index="${potIdx}"`, 0.1, -20, 'tt-pot-dyn')}
+                    ${this.renderNumberInput('Zins A.', 'inp-pot-interest', currentPot.interestRate, `data-index="${potIdx}"`, 0.1, -20, 'tt-pot-int-a')}
+                    ${this.renderNumberInput('Zins E.', 'inp-pot-interest-ret', currentPot.interestRateRetirement, `data-index="${potIdx}"`, 0.1, -20, 'tt-pot-int-e')}
+                    ${this.renderNumberInput('Steuer', 'inp-pot-tax-rate', currentPot.taxRate || data.withdrawalTaxRate || 0, `data-index="${potIdx}"`, 0.5, 0, 'tt-pot-tax')}
                 </div>
                 <div style="display:flex; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid #e2e8f0;">
                     <button class="btn btn-sm btn-add-pot" style="flex:1; background:var(--primary); color:white; font-size:0.75rem;">➕ Neuer Topf</button>
@@ -227,14 +221,14 @@ export class EditorRenderer {
             htmlPots += `
             <div style="background:white; border-radius:6px; border:1px solid #fee2e2; padding:8px; margin-bottom:8px;">
                 <div class="input-grid-2" style="margin-bottom:8px;">
-                    <div class="form-group" style="margin:0;"><label>Alter</label><input type="number" min="0" max="150" class="inp-otp-age" data-index="${i}" value="${otp.age}"></div>
-                    <div class="form-group" style="margin:0;"><label>Betrag (€)</label><input type="number" min="0" step="100" class="inp-otp-amount" data-index="${i}" value="${otp.amount}"></div>
+                    ${this.renderNumberInput('Alter', 'inp-otp-age', otp.age, `data-index="${i}"`, 1, 0)}
+                    ${this.renderNumberInput('Betrag (€)', 'inp-otp-amount', otp.amount, `data-index="${i}"`, 1000, 0)}
                 </div>
                 <div class="input-grid-2" style="align-items:end;">
                     <div class="form-group" style="margin:0;"><label>Ziel-Topf</label><select class="inp-otp-pot" data-index="${i}">${potOptions}</select></div>
                     <div style="display:flex; gap:8px; align-items:end;">
                         <div class="form-group" style="margin:0; flex:1;"><label>Stichwort</label><input type="text" class="inp-otp-desc" data-index="${i}" value="${otp.description || ''}" placeholder="z.B. Bonus"></div>
-                        <button class="btn btn-icon delete btn-remove-otp" data-index="${i}" style="padding:4px; color:#16a34a; margin-bottom:2px;">🗑️</button>
+                        <button class="btn btn-icon delete btn-remove-otp" data-index="${i}" style="padding:4px; color:#16a34a; margin-bottom:12px;">🗑️</button>
                     </div>
                 </div>
             </div>`;
@@ -247,14 +241,20 @@ export class EditorRenderer {
 
     renderRentenphase(container, data) {
         const d = data;
-        let html = '';
+        // Read active sub-tab from container; default to 'bedarf'
+        const activePanel = container.dataset.retPanel || 'bedarf';
 
-        html += `
-        <div id="acc-ret-expenses" class="accordion-section sub ${this.app.isExpanded('acc-ret-expenses') ? 'expanded' : ''}">
-            <button class="accordion-header sub" onclick="app.toggleAccordion(this)">📉 Bedarf / Einmalausgaben</button>
-            <div class="accordion-content">
-                <div class="card" style="background:#fff1f2; border-left:4px solid #e11d48; padding:0.75rem; margin-top:0;">
-                    <div style="font-weight:600; font-size:0.85rem; margin-bottom:8px;" class="hide-small">📉 Bedarf & Einmalausgaben</div>
+        let html = `
+        <div class="ret-sub-tabs">
+            <button class="ret-sub-tab ${activePanel === 'bedarf' ? 'active' : ''}"
+                    onclick="app.switchRetTab('bedarf')">📉 Mein Bedarf</button>
+            <button class="ret-sub-tab ${activePanel === 'renten' ? 'active' : ''}"
+                    onclick="app.switchRetTab('renten')">🏝️ Renten & Einkünfte</button>
+        </div>`;
+
+        // ── Panel: Bedarf ─────────────────────────────────────────────
+        html += `<div class="ret-panel${activePanel === 'bedarf' ? ' active' : ''}" id="ret-panel-bedarf">`;
+        html += `<div class="card" style="background:#fff1f2; border-left:4px solid #e11d48; padding:0.75rem; margin-top:0;">
                     <div style="margin-bottom:12px;">
                         <div style="font-size:0.7rem; font-weight:600; color:#64748b; margin-bottom:4px; text-transform:uppercase;">
                             Ruhestands-Phasen (Netto-Bedarf)
@@ -264,20 +264,16 @@ export class EditorRenderer {
         (d.retirementPhases || []).forEach((phase, phIdx) => {
             html += `
             <div class="input-grid-2" style="margin-bottom:8px; padding-bottom:4px; border-bottom: 1px dotted #fecaca;">
-                <div class="form-group" style="margin:0;"><label>Ab Alter</label><input type="number" min="0" max="150" class="inp-retphase-from" data-index="${phIdx}" value="${phase.fromAge}"></div>
+                ${this.renderNumberInput('Ab Alter', 'inp-retphase-from', phase.fromAge, `data-index="${phIdx}"`, 1, 0)}
                 <div style="display:flex; gap:8px; align-items:end;">
-                    <div class="form-group" style="margin:0; flex:1;"><label>Bedarf (€/Mo)</label><input type="number" min="0" step="50" class="inp-retphase-amount" data-index="${phIdx}" value="${phase.monthlyAmount}"></div>
-                    <button class="btn btn-icon delete btn-remove-retphase" data-index="${phIdx}" style="padding:4px; margin-bottom:2px;" ${d.retirementPhases.length === 1 ? 'disabled' : ''}>🗑️</button>
+                    ${this.renderNumberInput('Bedarf (€/Mo)', 'inp-retphase-amount', phase.monthlyAmount, `data-index="${phIdx}"`, 50, 0)}
+                    <button class="btn btn-icon delete btn-remove-retphase" data-index="${phIdx}" style="padding:4px; margin-bottom:12px;" ${d.retirementPhases.length === 1 ? 'disabled' : ''}>🗑️</button>
                 </div>
             </div>`;
         });
 
         if (!d.retirementPhases || d.retirementPhases.length === 0) {
-            html += `
-            <div class="form-group" style="margin-bottom:8px;">
-                <label style="font-size:0.7rem;">Monatlicher Bedarf (Basis)</label>
-                <input type="number" class="inp-ret-expenses" value="${d.retirementExpenses}" style="padding:2px 6px; font-size:0.85rem;">
-            </div>`;
+            html += this.renderNumberInput('Monatlicher Bedarf (Basis)', 'inp-ret-expenses', d.retirementExpenses, '', 50, 0);
         }
 
         html += `
@@ -292,30 +288,36 @@ export class EditorRenderer {
             let potOptions = `<option value="all" ${exp.targetPotIndex === 'all' ? 'selected' : ''}>Alle Töpfe</option>`;
             d.pots.forEach((p, pIdx) => { potOptions += `<option value="${pIdx}" ${exp.targetPotIndex == pIdx ? 'selected' : ''}>${p.name}</option>`; });
             html += `
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)) auto; gap:6px; align-items:end; margin-bottom:4px; padding:6px; background:white; border-radius:6px; border:1px solid #fecaca;">
-                <div class="form-group" style="margin:0;"><label style="font-size:0.65rem">Alter</label><input type="number" min="0" max="150" class="inp-ote-age" data-index="${i}" value="${exp.age}" style="padding:2px 6px; font-size:0.8rem;"></div>
-                <div class="form-group" style="margin:0;"><label style="font-size:0.65rem">Betrag (€)</label><input type="number" min="0" step="100" class="inp-ote-amount" data-index="${i}" value="${exp.amount}" style="padding:2px 6px; font-size:0.8rem;"></div>
-                <div class="form-group" style="margin:0;"><label style="font-size:0.65rem">Ziel-Topf</label><select class="inp-ote-pot" data-index="${i}" style="padding:2px 6px; font-size:0.8rem; border:1px solid #e2e8f0; border-radius:4px;">${potOptions}</select></div>
-                <div class="form-group" style="margin:0;"><label style="font-size:0.65rem">Stichwort</label><input type="text" class="inp-ote-desc" data-index="${i}" value="${exp.description || ''}" placeholder="z.B. Weltreise" style="padding:2px 6px; font-size:0.8rem;"></div>
-                <button class="btn btn-icon delete btn-remove-ote" data-index="${i}" style="padding:2px; color:#e11d48; margin-bottom:2px;">🗑️</button>
+            <div style="background:white; border-radius:6px; border:1px solid #fecaca; padding:8px; margin-bottom:8px;">
+                <div class="input-grid-2" style="margin-bottom:8px;">
+                    ${this.renderNumberInput('Alter', 'inp-ote-age', exp.age, `data-index="${i}"`, 1, 0)}
+                    ${this.renderNumberInput('Betrag (€)', 'inp-ote-amount', exp.amount, `data-index="${i}"`, 1000, 0)}
+                </div>
+                <div class="input-grid-2" style="align-items:end;">
+                    <div class="form-group" style="margin:0;"><label style="font-size:0.75rem;">Ziel-Topf</label><select class="inp-ote-pot" data-index="${i}" style="font-size:0.85rem;">${potOptions}</select></div>
+                    <div style="display:flex; gap:8px; align-items:end;">
+                        <div class="form-group" style="margin:0; flex:1;"><label style="font-size:0.75rem;">Stichwort</label><input type="text" class="inp-ote-desc" data-index="${i}" value="${exp.description || ''}" placeholder="z.B. Weltreise" style="font-size:0.85rem;"></div>
+                        <button class="btn btn-icon delete btn-remove-ote" data-index="${i}" style="padding:4px; color:#e11d48; margin-bottom:12px;">🗑️</button>
+                    </div>
+                </div>
             </div>`;
         });
-        html += `<button class="btn btn-sm btn-outline btn-add-ote" style="width:100%; font-size:0.75rem; padding:4px; color:#e11d48; border-color:#e11d48;">+ Ausgabe hinzufügen</button></div></div></div>`;
+        html += `<button class="btn btn-sm btn-outline btn-add-ote" style="width:100%; font-size:0.75rem; padding:4px; color:#e11d48; border-color:#e11d48;">+ Ausgabe hinzufügen</button></div></div>`;
+        html += `</div>`; // end ret-panel-bedarf
 
-        html += `
-        <div id="acc-ret-pensions" class="accordion-section sub ${this.app.isExpanded('acc-ret-pensions') ? 'expanded' : ''}">
-            <button class="accordion-header sub" onclick="app.toggleAccordion(this)">🏝️ Rentenquellen</button>
-            <div class="accordion-content">
-                <div class="card" style="background:#f0fdfa; border-left:4px solid #0d9488; padding:0.75rem; margin-top:0;">
+        // ── Panel: Renten & Einkünfte ─────────────────────────────────
+        html += `<div class="ret-panel${activePanel === 'renten' ? ' active' : ''}" id="ret-panel-renten">`;
+        html += `<div class="card" style="background:#f0fdfa; border-left:4px solid #0d9488; padding:0.75rem; margin-top:0;">
                     <div style="font-weight:600; font-size:0.85rem; margin-bottom:8px;" class="hide-small">
                         🏝️ Rentenquellen
                         <span class="tooltip-trigger" data-tooltip-id="tt-ret-pensions">ℹ️<span class="tooltip-content" id="tt-ret-pensions">
                             <strong>🏝️ Rentenquellen</strong>
                             Zahlungen aus gesetzlicher, betrieblicher oder privater Rente.
+                            <div class="tt-rule"><strong>Wichtig:</strong> Die Rente wächst (Dynamik) erst ab dem hier eingestellten <strong>Rentenbeginn</strong>.</div>
                             <div class="tt-rule">Netto einplanen: Zieh ca. 11-12% für KV/PV von der Bruttorente ab.</div>
-                            <div class="tt-more-link" onclick="app.showHelp('karte-5')">Mehr erfahren →</div>
                         </span></span>
                     </div>`;
+
         (d.pensions || []).forEach((p, idx) => {
             html += `
             <div style="background:white; padding:6px; border-radius:6px; margin-bottom:6px; border:1px solid #e2e8f0;">
@@ -323,57 +325,32 @@ export class EditorRenderer {
                     <input type="text" class="inp-pension-label" data-index="${idx}" value="${p.label}" style="flex:2; font-weight:600; font-size:0.8rem; padding: 2px 6px;">
                     <button class="btn-icon delete btn-remove-pension" data-index="${idx}" style="padding:2px;">🗑️</button>
                 </div>
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap:6px;">
-                    <div style="display:flex; flex-direction:column; gap:8px;">
-                        <div class="form-group" style="margin:0;"><label style="font-size:0.65rem">Betrag / Monat (€)</label><input type="number" min="0" step="50" class="inp-pension-amount" data-index="${idx}" value="${p.amount}"></div>
-                        <div style="display:flex; gap:4px;"><label style="font-size:0.65rem; width:45%;">Ab Alter</label><label style="font-size:0.65rem; width:55%;">Dyn. (%/J)</label></div>
-                        <div style="display:flex; gap:4px;"><input type="number" min="0" max="150" class="inp-pension-start" data-index="${idx}" value="${p.startAge}" style="padding:2px 4px; font-size:0.8rem; width:45%;"><input type="number" step="0.1" min="-10" max="20" class="inp-pension-growth" data-index="${idx}" value="${p.growth}" style="padding:2px 4px; font-size:0.8rem; width:55%;"></div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:8px;">
+                    <div style="grid-column: 1 / -1; margin-bottom: 4px;">
+                        ${this.renderNumberInput('Monatlicher Betrag (€)', 'inp-pension-amount', p.amount, `data-index="${idx}"`, 50, 0)}
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:0.7rem; font-weight:600; color:#64748b; margin-bottom:4px;">Ab Alter</label>
+                        <div class="hybrid-input-wrapper">
+                            <button class="hybrid-spin-btn minus" onclick="app.adjustValue(this, -1)">−</button>
+                            <input type="number" min="0" max="150" class="inp-pension-start" data-index="${idx}" value="${p.startAge}">
+                            <button class="hybrid-spin-btn plus" onclick="app.adjustValue(this, 1)">+</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:0.7rem; font-weight:600; color:#64748b; margin-bottom:4px;">Dynamik (%/J)</label>
+                        <div class="hybrid-input-wrapper">
+                            <button class="hybrid-spin-btn minus" onclick="app.adjustValue(this, -0.1)">−</button>
+                            <input type="number" step="0.1" min="-10" max="20" class="inp-pension-growth" data-index="${idx}" value="${p.growth}">
+                            <button class="hybrid-spin-btn plus" onclick="app.adjustValue(this, 0.1)">+</button>
+                        </div>
                     </div>
                 </div>
-                ${p.id === 'state' && d.retirementAge < 67 ? `
-                <div style="margin-top: 8px; padding: 6px; background: #f8fafc; border-radius: 4px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
-                    <label style="font-size: 0.7rem; color: #1e293b; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                        <input type="checkbox" class="inp-pension-penalty" data-index="${idx}" ${p.applyPenalty ? 'checked' : ''}>
-                        Abzüge schätzen (-3,6%/J)
-                    </label>
-                    <div class="pension-penalty-calc" data-index="${idx}" style="font-size: 0.7rem; font-weight: 600;"></div>
-                </div>
-                ` : ''}
             </div>`;
         });
-        html += `<button class="btn btn-sm btn-add-pension" style="background:#0d9488; color:white; width:100%; font-size:0.75rem; padding:4px;">➕ Quelle hinzufügen</button></div></div></div>`;
 
-        html += `
-        <div id="acc-ret-rental" class="accordion-section sub ${this.app.isExpanded('acc-ret-rental') ? 'expanded' : ''}">
-            <button class="accordion-header sub" onclick="app.toggleAccordion(this)">🏠 Miete & Sonstiges</button>
-            <div class="accordion-content">
-                <div class="card" style="background:#fefce8; border-left:4px solid #eab308; padding:0.75rem; margin-top:0;">
-                    <div style="font-weight:600; font-size:0.85rem; margin-bottom:8px;" class="hide-small">
-                        🏠 Miete & Sonstiges
-                        <span class="tooltip-trigger" data-tooltip-id="tt-ret-rental">ℹ️<span class="tooltip-content" id="tt-ret-rental">Zusätzliche monatliche Einnahmen, z.B. aus Immobilienvermietung oder Nebentätigkeiten.</span></span>
-                    </div>`;
-        (d.rentalIncomes || []).forEach((ri, idx) => {
-            html += `
-            <div style="background:white; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid #fef08a; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                <div style="display:flex; gap:6px; margin-bottom:8px;">
-                    <input type="text" class="inp-rental-label" data-index="${idx}" value="${ri.label}" style="flex:2; font-weight:700; font-size:0.9rem; padding: 4px 8px; border-color: #fef08a;">
-                    <button class="btn-icon delete btn-remove-rental" data-index="${idx}" style="padding:4px; color:#eab308; border-color:#fef08a;">🗑️</button>
-                </div>
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap:10px; margin-bottom:10px;">
-                    <div class="form-group" style="margin:0;"><label style="font-size:0.65rem;">Betrag (€/Mo)</label><input type="number" min="0" step="50" class="inp-rental-amount" data-index="${idx}" value="${ri.amount}" style="padding:4px 8px; font-size:0.85rem;"></div>
-                    <div class="form-group" style="margin:0;"><label style="font-size:0.65rem;">Start/Trend (%)</label><div style="display:flex; gap:4px;"><input type="number" min="0" max="150" class="inp-rental-start" data-index="${idx}" value="${ri.startAge}" style="padding:4px; font-size:0.85rem; width:45%;"><input type="number" step="0.1" min="-10" max="20" class="inp-rental-growth" data-index="${idx}" value="${ri.growth || 0}" style="padding:4px; font-size:0.85rem; width:55%;"></div></div>
-                    <div class="form-group" style="margin:0;"><label style="font-size:0.65rem;">Steuersatz (%)</label><input type="number" step="0.1" class="inp-rental-tax" data-index="${idx}" value="${ri.taxRate || 0}" style="padding:4px 8px; font-size:0.85rem;"></div>
-                </div>
-                <div style="display:flex; gap:6px; flex-wrap:wrap; border-top:1px solid #fef08a; padding-top:8px;">
-                    <div style="font-size:0.6rem; color:#854d0e; width:100%; font-weight:600; margin-bottom:2px; text-transform:uppercase;">Steuer-Quick-Select</div>
-                    <button class="btn btn-sm btn-outline btn-apply-rental-tax" data-index="${idx}" data-tax="0" style="font-size:0.65rem; padding:2px 6px;">0% (Steuerfrei)</button>
-                    <button class="btn btn-sm btn-outline btn-apply-rental-tax" data-index="${idx}" data-tax="15" style="font-size:0.65rem; padding:2px 6px;">15% (Pauschal)</button>
-                    <button class="btn btn-sm btn-outline btn-apply-rental-tax" data-index="${idx}" data-tax="25" style="font-size:0.65rem; padding:2px 6px;">25% (Kapital)</button>
-                    <button class="btn btn-sm btn-outline btn-apply-rental-tax" data-index="${idx}" data-tax="42" style="font-size:0.65rem; padding:2px 6px;">42% (Spitze)</button>
-                </div>
-            </div>`;
-        });
-        html += `<button class="btn btn-sm btn-add-rental" style="background:#eab308; width:100%; font-size:0.75rem; padding:6px; color:white; border-radius:8px;">➕ Einnahme hinzufügen</button></div></div></div>`;
+        html += `<button class="btn btn-sm btn-add-pension" style="background:#0d9488; color:white; width:100%; font-size:0.75rem; padding:4px;">➕ Quelle hinzufügen</button></div>`;
+        html += `</div>`; // end ret-panel-renten
 
         container.innerHTML = html;
         this.attachRentenphaseListeners(container);
@@ -388,26 +365,16 @@ export class EditorRenderer {
         <div class="card" style="background:var(--primary-light); border-left:4px solid var(--primary);">
             <div style="font-weight:600; font-size:0.9rem; margin-bottom:12px;">📅 Alter & Planung</div>
             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;">
-                <div class="form-group" style="margin:0;"><label style="font-size:0.65rem; display:flex; align-items:center; gap:2px; white-space:nowrap;">Alter <span class="tooltip-trigger" data-tooltip-id="tt-age-cur">ℹ️<span class="tooltip-content" id="tt-age-cur">Dein aktuelles Lebensalter am Anfang der Planung.</span></span></label><input type="number" min="0" max="100" class="inp-age" data-key="currentAge" value="${d.currentAge}" style="padding:4px; font-size:0.85rem;"></div>
-                <div class="form-group" style="margin:0;"><label style="font-size:0.65rem; display:flex; align-items:center; gap:2px; white-space:nowrap;">Rente <span class="tooltip-trigger" data-tooltip-id="tt-age-ret">ℹ️<span class="tooltip-content" id="tt-age-ret">Das geplante Alter für den Beginn des Ruhestands.</span></span></label><input type="number" min="0" max="100" class="inp-age" data-key="retirementAge" value="${d.retirementAge}" style="padding:4px; font-size:0.85rem;"></div>
-                <div class="form-group" style="margin:0;"><label style="font-size:0.65rem; display:flex; align-items:center; gap:2px; white-space:nowrap;">Ende <span class="tooltip-trigger" data-tooltip-id="tt-age-end">ℹ️<span class="tooltip-content" id="tt-age-end">Bis zu welchem Alter soll die Planung reichen?</span></span></label><input type="number" min="0" max="150" class="inp-age" data-key="endAge" value="${d.endAge}" style="padding:4px; font-size:0.85rem;"></div>
+                ${this.renderNumberInput('Alter', 'inp-age', d.currentAge, 'data-key="currentAge"', 1, 0, 'tt-age-cur')}
+                ${this.renderNumberInput('Rente', 'inp-age', d.retirementAge, 'data-key="retirementAge"', 1, 0, 'tt-age-ret')}
+                ${this.renderNumberInput('Ende', 'inp-age', d.endAge, 'data-key="endAge"', 1, 0, 'tt-age-end')}
             </div>
         </div>
         <div class="card" style="background:#f8fafc; border-left:4px solid #f59e0b;">
             <div style="font-weight:600; font-size:0.9rem; margin-bottom:12px;">📊 Wirtschaftliche Annahmen</div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom: 12px;">
-                <div class="form-group" style="margin:0;">
-                    <label style="font-size:0.65rem; display:flex; align-items:center; gap:2px; white-space:nowrap;">
-                        Inflation (%) <span class="tooltip-trigger" data-tooltip-id="tt-inflation">ℹ️<span class="tooltip-content" id="tt-inflation">Angenommene jährliche Inflationsrate. Beeinflusst die reale Kaufkraft Ihrer Ersparnisse.</span></span>
-                    </label>
-                    <input type="number" step="0.1" min="-10" max="30" class="inp-econ" data-key="inflationRate" value="${d.inflationRate}" style="padding:4px; font-size:0.85rem;">
-                </div>
-                <div class="form-group" style="margin:0;">
-                    <label style="font-size:0.65rem; display:flex; align-items:center; gap:2px; white-space:nowrap;">
-                        Steuer (%) <span class="tooltip-trigger" data-tooltip-id="tt-tax">ℹ️<span class="tooltip-content" id="tt-tax">Globaler Steuersatz auf Kapitalerträge. Wird als Standard für neue Töpfe verwendet.</span></span>
-                    </label>
-                    <input type="number" step="0.1" min="0" max="100" class="inp-econ" data-key="withdrawalTaxRate" value="${d.withdrawalTaxRate}" style="padding:4px; font-size:0.85rem;">
-                </div>
+                ${this.renderNumberInput('Inflation (%)', 'inp-econ', d.inflationRate, 'data-key="inflationRate"', 0.1, -5, 'tt-inflation')}
+                ${this.renderNumberInput('Steuer (%)', 'inp-econ', d.withdrawalTaxRate, 'data-key="withdrawalTaxRate"', 0.5, 0, 'tt-tax')}
             </div>
             <div style="padding-top:10px; border-top:1px solid #e2e8f0;">
                 <div style="font-size:0.7rem; font-weight:600; color:#64748b; margin-bottom:6px; text-transform:uppercase;">Steuer-Quick-Select (Alle Töpfe)</div>
@@ -490,18 +457,19 @@ export class EditorRenderer {
                 statusColor = '#dc2626'; // Red
                 statusText = `Lücke ab ${exhaustionAge}`;
                 scoreDisplay = '0 J.';
-                commentary = `In dieser Simulation ist das Vermögen bereits mit Alter ${exhaustionAge} aufgebraucht. Eine Überprüfung der Eingaben zu Sparrate, Rentenbeginn oder Ausgaben wird dringend empfohlen.`;
+                commentary = `⚠️ <strong>Vorsicht:</strong> In dieser Simulation ist dein Vermögen bereits mit <strong>Alter ${exhaustionAge}</strong> aufgebraucht. <br><br>Das bedeutet, dass ab diesem Zeitpunkt eine monatliche Lücke entsteht, die nicht mehr durch dein Erspartes gedeckt werden kann. Wir empfehlen, die Sparrate zu erhöhen, den Rentenbeginn hinauszuschieben oder das Wunsch-Budget kritisch zu prüfen.`;
             } else if (finalWealth > 0) {
                 if (yearsOfBuffer < 3) {
                     statusColor = '#f59e0b'; // Amber
                     statusText = 'Knapp';
                     scoreDisplay = yearsOfBuffer.toFixed(1) + ' J.';
-                    commentary = `Die Simulation ergibt einen knappen Puffer von ca. ${yearsOfBuffer.toFixed(1)} Jahren. Prüfe deine Annahmen oder die Sparquote, um die Belastbarkeit der Planung zu erhöhen.`;
+                    commentary = `⚖️ <strong>Dein Plan ist auf Kante genäht:</strong> Du hast am Ende der Simulation nur einen Puffer von ca. <strong>${yearsOfBuffer.toFixed(1)} Jahren</strong>. <br><br>Schon kleine Änderungen (höhere Inflation oder geringere Rendite) könnten zu einer Lücke führen. Überlege, ob du eine zusätzliche Sicherheitsmarge einplanen möchtest.`;
                 } else {
                     statusColor = '#10b981'; // Green
                     statusText = 'Sicher';
+                    const bufferText = Number.isFinite(yearsOfBuffer) ? yearsOfBuffer.toFixed(1) + ' Jahre' : '>50 Jahre';
                     scoreDisplay = Number.isFinite(yearsOfBuffer) ? yearsOfBuffer.toFixed(1) + ' J.' : '>50 J.';
-                    commentary = `Auf Basis der gewählten Parameter ist dein Plan solide. Das rechnerische Restvermögen deckt die geplanten Ausgaben für ca. ${yearsOfBuffer.toFixed(1)} weitere Jahre (unter Berücksichtigung der Inflation).`;
+                    commentary = `✅ <strong>Hervorragend:</strong> Dein Plan steht auf einem soliden Fundament. Das rechnerische Restvermögen deckt deine geplanten Ausgaben für <strong>weitere ${bufferText}</strong> ab.<br><br>Selbst Marktschwankungen oder eine etwas höhere Inflation sollten diesen Plan nicht so leicht aus der Bahn werfen. Du bist auf einem sehr guten Weg!`;
                 }
             } else {
                 // Fallback for finalWealth <= 0 but exhaustionAge search failed (unlikely)
@@ -560,7 +528,6 @@ export class EditorRenderer {
         container.querySelector('.btn-add-retphase')?.addEventListener('click', () => this.app.addRetirementPhase());
         container.querySelector('.btn-add-ote')?.addEventListener('click', () => this.app.addOneTimeExpense());
         container.querySelector('.btn-add-pension')?.addEventListener('click', () => this.app.addPension());
-        container.querySelector('.btn-add-rental')?.addEventListener('click', () => this.app.addRentalIncome());
 
         container.querySelectorAll('.btn-remove-retphase').forEach(btn => {
             btn.addEventListener('click', () => this.app.removeRetirementPhase(btn.dataset.index));
@@ -570,12 +537,6 @@ export class EditorRenderer {
         });
         container.querySelectorAll('.btn-remove-pension').forEach(btn => {
             btn.addEventListener('click', () => this.app.removePension(btn.dataset.index));
-        });
-        container.querySelectorAll('.btn-remove-rental').forEach(btn => {
-            btn.addEventListener('click', () => this.app.removeRentalIncome(btn.dataset.index));
-        });
-        container.querySelectorAll('.btn-apply-rental-tax').forEach(btn => {
-            btn.addEventListener('click', () => this.app.updateRentalIncomeParam(btn.dataset.index, 'taxRate', +btn.dataset.tax));
         });
 
         container.querySelectorAll('input, select').forEach(input => {
@@ -592,12 +553,7 @@ export class EditorRenderer {
                 if (input.classList.contains('inp-pension-amount')) this.app.updatePensionParam(idx, 'amount', val);
                 if (input.classList.contains('inp-pension-start')) this.app.updatePensionParam(idx, 'startAge', val);
                 if (input.classList.contains('inp-pension-growth')) this.app.updatePensionParam(idx, 'growth', val);
-                if (input.classList.contains('inp-pension-penalty')) this.app.updatePensionParam(idx, 'applyPenalty', input.checked);
-                if (input.classList.contains('inp-rental-label')) this.app.updateRentalIncomeParam(idx, 'label', val);
-                if (input.classList.contains('inp-rental-amount')) this.app.updateRentalIncomeParam(idx, 'amount', val);
-                if (input.classList.contains('inp-rental-start')) this.app.updateRentalIncomeParam(idx, 'startAge', val);
-                if (input.classList.contains('inp-rental-growth')) this.app.updateRentalIncomeParam(idx, 'growth', val);
-                if (input.classList.contains('inp-rental-tax')) this.app.updateRentalIncomeParam(idx, 'taxRate', val);
+
             });
         });
     }
