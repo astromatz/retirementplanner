@@ -41,6 +41,14 @@ Dieses Tool verfolgt einen **"Local-First"** Ansatz:
 1. Repository klonen oder ZIP herunterladen.
 2. `index.html` in einem modernen Browser öffnen (oder per `npx http-server` starten).
 
+### Desktop-Version bauen
+Das Projekt nutzt **Electron** und **Electron Forge**:
+```bash
+cd retirement_planner_desktop
+npm install
+npm run make
+```
+Die fertige `setup.exe` findest du anschließend im Ordner `out/make/`.
 
 ### 📱 iPhone / iPad – Als App auf dem Homescreen ablegen
 
@@ -75,4 +83,3 @@ Die fertige `setup.exe` findest du anschließend im Ordner `out/make/`.
 ### Rechtlicher Hinweis
 © 2026 Mathias Böhme. 
 Alle Berechnungen dieses Tools dienen der Orientierung und sind ohne Gewähr. Dies stellt keine Anlageberatung oder steuerliche Beratung dar.
-

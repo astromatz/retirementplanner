@@ -9,16 +9,13 @@ export class TableRenderer {
         const tableBody = document.querySelector(`${this.tableSelector} tbody`);
         if (!tableBody) return;
 
-        const rentalIncomes = appState.rentalIncomes || [];
         const thead = document.querySelector(`${this.tableSelector} thead tr`);
         if (thead) {
-            let rentalHeaders = rentalIncomes.map(ri => `<th class="hide-mobile">${ri.label}</th>`).join('');
             thead.innerHTML = `
                 <th class="col-alter">Alter</th>
                 <th class="hide-mobile">Jahr</th>
                 <th class="col-wealth">Vermögen</th>
                 <th class="hide-mobile hide-small">Rente</th>
-                ${rentalHeaders}
                 <th class="hide-mobile">Saldo</th>
                 <th class="col-info">Info</th>`;
         }
@@ -33,16 +30,7 @@ export class TableRenderer {
 
             // Calculate or extract these from simulation row
             const pensionVal = row.pension || 0;
-            const withdrawalVal = isRet ? (row.withdrawal || 0) : 0;
-
-            // Extract individual rental values using mapping
-            const rentalCols = rentalIncomes.map(ri => {
-                const riVal = (row.incomeDetails || []).find(id => id.label === ri.label);
-                return `<td class="hide-mobile" style="color:#3b82f6;">${isRet && riVal ? format(riVal.nominalAmount / 12) : '-'}</td>`;
-            }).join('');
-
-            const totalIncomes = pensionVal + (row.rentalIncome || 0);
-            const netSaldo = totalIncomes - row.expenses;
+            const netSaldo = pensionVal - row.expenses;
 
             return `
                 <tr class="${rowClass}" data-age="${row.age}">
@@ -50,11 +38,9 @@ export class TableRenderer {
                     <td class="hide-mobile">${row.year}</td>
                     <td class="col-wealth" style="font-weight:600;">${format(row.totalWealth)}</td>
                     <td class="hide-mobile hide-small" style="color:#10b981;">${isRet ? format(pensionVal / 12) : '-'}</td>
-                    ${rentalCols}
                     <td class="hide-mobile" style="color:${netSaldo >= 0 ? '#10b981' : '#ef4444'};">${isRet ? format(netSaldo / 12) : '-'}</td>
                     <td class="col-info">
-                        <button class="btn btn-sm btn-details" data-age="${row.age}" title="Details ansehen">🔍 <span class="hide-mobile">Details</span></button>
-                        ${row.age <= d.currentAge || row.isReal ? `<button class="btn btn-sm btn-rc" data-age="${row.age}" data-pots='${JSON.stringify(row.pots.map(p => p.value))}' title="Realen Ist-Wert hinterlegen" style="margin-left: 5px;">🎯</button>` : ''}
+                        <button class="btn btn-sm btn-rc" data-age="${row.age}" data-pots='${JSON.stringify(row.pots.map(p => p.value))}' title="Jahresabschluss (Ist-Wert) hinterlegen">🎯</button>
                     </td>
                 </tr>
                 <tr class="detail-row" id="detail-${row.age}">
@@ -75,7 +61,7 @@ export class TableRenderer {
                                         `).join('')}
                                         <div class="detail-line" style="border-top: 1px solid #e2e8f0; margin-top: 5px; padding-top: 5px;">
                                             <span class="detail-label">Einnahmen Gesamt:</span>
-                                            <span class="detail-value" style="color:#10b981;">${format(totalIncomes / 12)} / Mo.</span>
+                                            <span class="detail-value" style="color:#10b981;">${format(pensionVal / 12)} / Mo.</span>
                                         </div>
                                     `}
                                 </div>

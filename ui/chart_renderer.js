@@ -10,9 +10,11 @@ export class ChartRenderer {
         const ctx = canvas.getContext('2d');
         const d = appState;
 
+        const style = getComputedStyle(document.documentElement);
+        const getVar = (name) => style.getPropertyValue(name).trim();
+
         const datasets = d.pots.map((pot, i) => {
-            const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899'];
-            const c = colors[i % colors.length];
+            const c = window.app.getPotColor(i);
             const isPurchasingPower = d.showPurchasingPower;
 
             return {
@@ -28,11 +30,13 @@ export class ChartRenderer {
         });
 
         if (d.showPurchasingPower) {
+            const infColor = getVar('--chart-inf') || '#f1f5f9';
+            const infBorder = getVar('--chart-inf-border') || '#cbd5e1';
             datasets.push({
                 label: 'Inflationsverlust',
                 data: data.map(point => point.totalWealth - point.realWealth),
-                backgroundColor: '#f1f5f9',
-                borderColor: '#cbd5e1',
+                backgroundColor: infColor,
+                borderColor: infBorder,
                 borderWidth: 1,
                 stack: 'wealth',
                 borderRadius: 0
@@ -42,13 +46,17 @@ export class ChartRenderer {
         // Handle Custom Legend in Header
         const legendContainer = document.getElementById('chart-legend');
         if (legendContainer) {
+            const primaryColor = getVar('--chart-1');
+            const infColor = getVar('--chart-inf') || '#f1f5f9';
+            const infBorder = getVar('--chart-inf-border') || '#cbd5e1';
+
             const newLegendHtml = d.showPurchasingPower ? `
                 <div class="legend-item">
-                    <span class="legend-dot" style="background:#10b981;"></span>
+                    <span class="legend-dot" style="background:${primaryColor};"></span>
                     <span>Echte Kaufkraft (Realwert)</span>
                 </div>
                 <div class="legend-item">
-                    <span class="legend-dot" style="background:#f1f5f9; border:1px solid #cbd5e1;"></span>
+                    <span class="legend-dot" style="background:${infColor}; border:1px solid ${infBorder};"></span>
                     <span>Inflationsanteil (Nominal-Bonus)</span>
                 </div>
             ` : '';
@@ -60,7 +68,8 @@ export class ChartRenderer {
 
         // The category-scale annotation plugin positions lines by 0-based index,
         // so (retirementAge - currentAge) gives the correct column index.
-        const markerIndex = d.retirementAge - d.currentAge;
+        // Robustly determine the marker index by matching the age in the labels
+        const markerIndex = data.findIndex(p => p.age === d.retirementAge);
 
         const chartConfig = {
             type: 'bar',
@@ -132,13 +141,15 @@ export class ChartRenderer {
             }
         };
 
-        // Destroy and recreate the chart on every render.
-        // Chart.js v4 normalises options into an internal copy; patching
-        // this.chart.options externally does not reliably update annotations.
+        // Use update() instead of destroy/recreate for smoother transitions
         if (this.chart) {
-            this.chart.destroy();
-            this.chart = null;
+            this.chart.data.labels = data.map(p => p.age);
+            this.chart.data.datasets = datasets;
+            this.chart.options.plugins.annotation.annotations.line1.xMin = markerIndex;
+            this.chart.options.plugins.annotation.annotations.line1.xMax = markerIndex;
+            this.chart.update('none'); // Update without animation for immediate sync
+        } else {
+            this.chart = new Chart(ctx, chartConfig);
         }
-        this.chart = new Chart(ctx, chartConfig);
     }
 }

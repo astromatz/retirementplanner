@@ -2,6 +2,12 @@
 <html lang="de">
 
 <head>
+    <script>
+        // Force trailing slash for correct relative path resolution
+        if (window.location.pathname.endsWith('/mobil')) {
+            window.location.replace(window.location.pathname + '/' + window.location.search + window.location.hash);
+        }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
@@ -13,16 +19,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
 
-	<!-- iPhone / iPad Home Screen Icon -->
-	<link rel="apple-touch-icon" href="icons/icon-180.png">
+    <!-- iPhone / iPad Home Screen Icon -->
+    <link rel="apple-touch-icon" href="icons/icon-180.png">
 
-	<!-- Android / Chrome PWA -->
-	<link rel="manifest" href="manifest.json">
+    <!-- Android / Chrome PWA -->
+    <link rel="manifest" href="manifest.json">
 </head>
 
 <body>
@@ -35,19 +42,20 @@
             </header>
 
             <div class="selection-grid">
-                <!-- Option 1: Wizard -->
-                <div class="selection-card glass" onclick="app.startWizard()">
+                <!-- Option 1: Start (Assistent) -->
+                <div class="selection-card glass" onclick="app.startSetup()">
                     <div class="selection-icon">✨</div>
-                    <h3>Geführte Planung</h3>
+                    <h3>Direkt Starten</h3>
                     <p>Ich möchte Schritt für Schritt meinen persönlichen Plan erstellen.</p>
-                    <span class="selection-badge">Ideal für Einsteiger</span>
+                    <span class="selection-badge">Sicher & Geführt</span>
                 </div>
 
                 <!-- Option 2: Dummy/Demo -->
                 <div class="selection-card glass" onclick="app.loadExampleData()">
                     <div class="selection-icon">🚀</div>
                     <h3>Beispiel ansehen</h3>
-                    <p>Ich möchte direkt sehen, wie es funktioniert – mit Beispielwerten zum Ausprobieren.</p>
+                    <p>Ich möchte direkt sehen, wie es funktioniert – mit editierbaren Beispielwerten zum Ausprobieren.
+                    </p>
                     <span class="selection-badge secondary">Schnellstart</span>
                 </div>
 
@@ -65,7 +73,7 @@
                     <div class="help-card-text">
                         <h3>Hilfe & Wissen</h3>
                         <p>Wie funktioniert das Tool? Was bedeuten die Felder?</p>
-                        <span class="sel-badge help">Vor dem Start lesen</span>
+                        <span class="sel-badge help">Vor dem Start lesen (ausführlich)</span>
                     </div>
                     <span class="help-card-arrow" style="margin-left:auto; color:#c2410c;">→</span>
                 </div>
@@ -80,7 +88,9 @@
         <!-- Wizard Container -->
         <div id="wizard-container" class="wizard-container animate-in">
             <header class="wizard-header">
-                <div class="logo"><span>🌱</span> Ruhestandsplaner</div>
+                <button class="wizard-home-btn" onclick="app.showLandingPage()" title="Startseite">🏠</button>
+                <div class="wizard-header-logo">🌱</div>
+                <div class="wizard-header-title">Ruhestandsplaner</div>
             </header>
 
             <div id="wizard-content" class="wizard-content">
@@ -99,176 +109,92 @@
         <!-- Dashboard View (New Grid Layout) -->
         <!-- Dashboard View (New Grid Layout) -->
         <div id="view-dashboard" style="display:none;">
-            <header class="dashboard-top-nav glass">
-                <div class="logo"><span>🌱</span> Ruhestandsplaner</div>
-                <div class="dashboard-toolbar">
-                    <button class="btn-action" onclick="app.startWizard()" title="Setup Wizard">
-                        <span class="btn-action-icon">✨</span>
-                        <span class="btn-action-label">Wizard</span>
-                    </button>
-                    <button class="btn-action" onclick="app.saveData()" title="Speichern">
-                        <span class="btn-action-icon">💾</span>
-                        <span class="btn-action-label">Speichern</span>
-                    </button>
-                    <button class="btn-action" onclick="window.print()" title="Drucken">
-                        <span class="btn-action-icon">🖨️</span>
-                        <span class="btn-action-label">Drucken</span>
-                    </button>
-                    <button class="btn-action" onclick="app.exportCSV()" title="CSV Export">
-                        <span class="btn-action-icon">📊</span>
-                        <span class="btn-action-label">CSV</span>
-                    </button>
-                    <button class="btn-action" onclick="document.getElementById('dashboard-load-file').click()"
-                        title="Laden">
-                        <span class="btn-action-icon">📂</span>
-                        <span class="btn-action-label">Laden</span>
-                        <input type="file" id="dashboard-load-file" accept=".encrypted" onchange="app.loadData(event)"
-                            style="display:none;">
-                    </button>
-                    <button class="btn-action btn-help" onclick="app.showHelp()" title="Hilfe">
-                        <span class="btn-action-icon">📖</span>
-                        <span class="btn-action-label">Hilfe</span>
-                    </button>
-                    <button class="btn-action btn-action-danger" onclick="app.reset()" title="Neu starten">
-                        <span class="btn-action-icon">🔄</span>
-                        <span class="btn-action-label">Neu</span>
-                    </button>
+            <!-- Refined Mobile Header -->
+            <header class="mobile-header glass">
+                <button class="btn btn-sm btn-outline" onclick="app.showLandingPage()"
+                    style="padding: 4px 12px; font-weight: 700;">Start</button>
+                <div style="flex:1; display:flex; justify-content:center; align-items:center;">
+                    <span style="font-size: 1.4rem;" title="Ruhestandsplaner">🌱</span>
+                </div>
+                <div class="header-actions" style="margin-left: 0; gap: 8px;">
+                    <button class="btn btn-sm btn-primary" onclick="app.saveData()"
+                        style="padding: 4px 12px; font-weight: 700;">Speichern</button>
+                    <button class="btn btn-sm btn-secondary"
+                        onclick="document.getElementById('dashboard-load-file').click()"
+                        style="padding: 4px 12px; font-weight: 700;">Laden</button>
+                    <input type="file" id="dashboard-load-file" style="display:none" onchange="app.loadData(event)">
+                    <button class="btn-icon" id="menu-trigger" onclick="app.toggleMenu()" title="Mehr">⋮</button>
+                    <!-- Dropdown Menu for secondary items -->
+                    <div id="header-menu" class="header-menu card" style="display:none;">
+                        <div class="menu-label">📋 Plan</div>
+                        <button onclick="app.loadExampleData()">Beispiel laden</button>
+                        <button onclick="window.print()">Drucken</button>
+                        <button onclick="app.exportCSV()">CSV Export</button>
+                        
+                        <div class="menu-label">🎨 Design</div>
+                        <div class="theme-grid">
+                            <button class="theme-opt" onclick="app.setTheme('clean')" title="Original">⚪</button>
+                            <button class="theme-opt" onclick="app.setTheme('edel')" title="Edel">🟢</button>
+                            <button class="theme-opt" onclick="app.setTheme('finanz')" title="Finanz">🔵</button>
+                            <button class="theme-opt" onclick="app.setTheme('senior')" title="Senior">🟤</button>
+                        </div>
+                        
+                        <hr>
+                        <button onclick="app.startSetup()" class="text-primary">Assistent neu starten</button>
+                        <button onclick="app.reset()" class="text-danger">Plan löschen</button>
+                    </div>
                 </div>
             </header>
 
-            <div class="dashboard-content-wrapper">
-                <!-- KPI Bar (Full Width) -->
-                <div class="kpi-grid">
-                    <div class="card kpi-card" style="background:#f0fdf4;">
-                        <div class="kpi-label" style="color:#166534;">Vermögen am Ende</div>
-                        <div id="stat-wealth" class="kpi-value" style="color:#16a34a;">-</div>
-                    </div>
-                    <div class="card kpi-card" style="background:#fef2f2;">
-                        <div class="kpi-label" style="color:#991b1b;">Versorgungslücke</div>
-                        <div id="stat-gap" class="kpi-value" style="color:#dc2626;">-</div>
-                    </div>
-                    <!-- Coverage KPI -->
-                    <div class="card kpi-card" style="background:#eff6ff;">
-                        <div class="kpi-label" style="color:#1e40af;">Sicherheits-Check</div>
-                        <div id="kpi-coverage" class="kpi-value" style="color:#2563eb;">-%</div>
-                    </div>
-                    <!-- Monthly Buffer KPI or similar -->
-                    <div class="card kpi-card" style="background:#fdfcf0;">
-                        <div class="kpi-label" style="color:#854d0e;">Sparrate Total</div>
-                        <div id="kpi-savings" class="kpi-value" style="color:#ca8a04;">-</div>
-                    </div>
-                </div>
+            <!-- Bottom Navigation Bar -->
+            <nav class="bottom-nav glass">
+                <button class="nav-item active" id="nav-assets" onclick="app.showPillar('assets')">
+                    <span class="nav-icon">💰</span>
+                    <span class="nav-label">Vermögen</span>
+                </button>
+                <button class="nav-item" id="nav-retirement" onclick="app.showPillar('retirement')">
+                    <span class="nav-icon">🌅</span>
+                    <span class="nav-label">Ruhestand</span>
+                </button>
+                <button class="nav-item" id="nav-results" onclick="app.showPillar('results')">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">Ergebnis</span>
+                </button>
+            </nav>
 
-                <!-- Main Middle Section (Split 50/50) -->
-                <div class="main-split-view">
-                    <!-- LEFT: Chart -->
-                    <div id="acc-chart" class="accordion-section expanded">
-                        <!-- Expanded by default for primary view -->
-                        <button class="accordion-header" onclick="app.toggleAccordion(this)">📈
-                            Vermögensentwicklung</button>
-                        <div class="accordion-content">
-                            <div class="chart-container-large card">
-                                <div
-                                    style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; margin-bottom:15px; row-gap:8px;">
-                                    <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
-                                        <h2 style="margin:0; font-size:1.1rem; overflow:hidden; text-overflow:ellipsis;"
-                                            class="hide-small">📈 Vermögensentwicklung</h2>
-                                        <div id="chart-legend" class="chart-legend"
-                                            style="min-width:0; overflow:hidden;"></div>
-                                    </div>
-                                    <div class="chart-toggle-container" style="flex-shrink:0;">
-                                        <label class="switch-label"
-                                            style="display:flex; align-items:center; gap:4px; white-space:nowrap;">
-                                            <span style="font-size: 0.7rem; color: var(--text-muted);"
-                                                class="hide-extra-small">Kaufkraft anzeigen</span>
-                                            <span style="font-size: 0.7rem; color: var(--text-muted);"
-                                                class="show-extra-small">Kaufkraft</span>
-                                            <span class="tooltip-trigger" data-tooltip-id="tooltip-purchasing-power"
-                                                style="margin-right: 4px; margin-left: 0;">ℹ️<span
-                                                    class="tooltip-content" id="tooltip-purchasing-power">Zeigt den
-                                                    realen Wert Ihres Vermögens
-                                                    unter
-                                                    Berücksichtigung der Inflation an (heutige Kaufkraft).</span></span>
-                                            <input type="checkbox" id="toggle-purchasing-power"
-                                                onchange="app.togglePurchasingPower(this.checked)">
-                                            <span class="switch-slider"></span>
-                                        </label>
-                                    </div>
-                                </div>
-                                <div style="flex:1; position:relative; min-height:450px;">
-                                    <canvas id="wealthChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
+            <main class="mobile-content-area">
+                <!-- Pillar 1: Assets -->
+                <section id="pillar-assets" class="pillar-section active">
+                    <div class="kpi-row-compact" id="kpi-row-assets">
+                        <!-- Stat items will be injected -->
+                    </div>
+                    <div id="asset-cards-container">
+                        <!-- Cards will be injected -->
                     </div>
 
-                    <!-- RIGHT: Editor -->
-                    <div id="acc-acc-editor" class="accordion-section expanded">
-                        <button class="accordion-header" onclick="app.toggleAccordion(this)">⚙️ Einstellungen
-                            (Tabs)</button>
-                        <div class="accordion-content">
-                            <div class="editor-container card" style="padding:0; display:flex; flex-direction:column;">
-                                <div class="editor-tabs">
-                                    <button class="editor-tab active" data-tab="strategie"
-                                        onclick="app.switchEditorTab('strategie')">Strategie</button>
-                                    <button class="editor-tab" data-tab="sparphase"
-                                        onclick="app.switchEditorTab('sparphase')">Sparphase</button>
-                                    <button class="editor-tab" data-tab="rentenphase"
-                                        onclick="app.switchEditorTab('rentenphase')">Rentenphase</button>
-                                </div>
-                                <div class="editor-body">
-                                    <div id="tab-strategie" class="editor-tab-content active"></div>
-                                    <div id="tab-sparphase" class="editor-tab-content"></div>
-                                    <div id="tab-rentenphase" class="editor-tab-content"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                </section>
 
-                <!-- Bottom Section: Detailed Table -->
-                <div class="bottom-results-view">
-                    <div id="acc-table" class="accordion-section expanded">
-                        <button class="accordion-header" onclick="app.toggleAccordion(this)">📄 Tabelle: Einnahmen &
-                            Ausgaben</button>
-                        <div class="accordion-content">
-                            <div class="card" style="padding:15px;">
-                                <div
-                                    style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; margin-bottom:12px; gap:8px;">
-                                    <div style="min-width:0;">
-                                        <h2 style="margin:0; font-size:1.1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"
-                                            class="hide-small">
-                                            📄 Ruhestand: Einnahmen & Ausgaben</h2>
-                                        <p class="landscape-hint"
-                                            style="margin:2px 0 0 0; font-size:0.65rem; color:var(--text-muted); display:none;">
-                                            💡 Mehr Spalten im Querformat sichtbar</p>
-                                    </div>
-                                </div>
-                                <div id="details-table-wrapper">
-                                    <div class="table-scroll-container">
-                                        <table id="details-table" class="results-table">
-                                            <thead>
-                                                <tr></tr>
-                                            </thead>
-                                            <tbody></tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                <!-- Pillar 2: Retirement -->
+                <section id="pillar-retirement" class="pillar-section">
+                    <!-- Timeline, Phases, Pensions -->
+                </section>
 
-            <footer class="dashboard-footer">
-                <p>© 2026 Mathias Böhme. Alle Berechnungen sind ohne Gewähr und stellen keine Anlageberatung dar.</p>
-            </footer>
+                <!-- Pillar 3: Results -->
+                <section id="pillar-results" class="pillar-section">
+                    <!-- Chart, Detailed KPIs, Table -->
+                </section>
+            </main>
+            <!-- Mobile Footer hidden to avoid overlap -->
+            <!-- <footer class="mobile-footer">
+                <p>© 2026 Mathias Böhme. Sicher & Lokal.</p>
+            </footer> -->
         </div>
 
         <!-- Password Modal -->
         <div id="passwordModal"
             style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
-            <div style="background:#fff; padding:40px; border-radius:16px; max-width:500px; width:90%; max-height:90vh; overflow-y:auto;">
+            <div
+                style="background:#fff; padding:40px; border-radius:16px; max-width:500px; width:90%; max-height:90vh; overflow-y:auto;">
                 <h2 id="modalTitle" style="margin-top:0;">Passwort</h2>
                 <p id="modalDescription" style="color:#666;"></p>
                 <div class="form-group">
@@ -287,7 +213,8 @@
         <!-- Reality Check Modal -->
         <div id="realityCheckModal"
             style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
-            <div style="background:#fff; padding:40px; border-radius:16px; max-width:500px; width:90%; max-height:90vh; overflow-y:auto;">
+            <div
+                style="background:#fff; padding:40px; border-radius:16px; max-width:500px; width:90%; max-height:90vh; overflow-y:auto;">
                 <h2 style="margin-top:0;">🎯 Realitätscheck</h2>
                 <p style="color:#666;" id="rcModalDescription"></p>
                 <div id="rcInputsContainer">
@@ -319,10 +246,21 @@
 
             <div class="help-cards-list" id="help-content">
                 <!-- Dynamic help cards -->
-            </div>
         </div>
+    </div>
 
-        <script type="module" src="app.js"></script>
+    <!-- Error Tracking for Mobile -->
+    <script>
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            var message = 'Fehler: ' + msg + '\nDatei: ' + url + '\nZeile: ' + lineNo;
+            console.error(message);
+            // On very broken mobile, this helps:
+            // if (confirm('Fehler erkannt: ' + msg + '\nDetails anzeigen?')) alert(message);
+            return false;
+        };
+    </script>
+
+    <script type="module" src="app.js?v=4"></script>
 
         <!-- Toast Container -->
         <div id="toast-container"></div>

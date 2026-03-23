@@ -1,7 +1,9 @@
 export class StateManager {
-    constructor(initialState) {
+    constructor(initialState, storageKey = null, storageObj = null) {
         this.state = JSON.parse(JSON.stringify(initialState));
         this.listeners = [];
+        this.storageKey = storageKey;
+        this.storageObj = storageObj;
     }
 
     getState() {
@@ -41,6 +43,13 @@ export class StateManager {
     }
 
     notify() {
+        if (this.storageKey && this.storageObj) {
+            try {
+                this.storageObj.setItem(this.storageKey, JSON.stringify(this.state));
+            } catch (e) {
+                console.warn('Autosave failed:', e);
+            }
+        }
         this.listeners.forEach(callback => callback(this.state));
     }
 }
