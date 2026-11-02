@@ -39,16 +39,7 @@ Dieses Tool verfolgt einen **"Local-First"** Ansatz:
 
 ### Web-Version (Lokal)
 1. Repository klonen oder ZIP herunterladen.
-2. `index.html` in einem modernen Browser öffnen (oder per `npx http-server` starten).
-
-### Desktop-Version bauen
-Das Projekt nutzt **Electron** und **Electron Forge**:
-```bash
-cd retirement_planner_desktop
-npm install
-npm run make
-```
-Die fertige `setup.exe` findest du anschließend im Ordner `out/make/`.
+2. `index.html` in einem modernen Browser öffnen (oder per `npx http-server` 
 
 ### 📱 iPhone / iPad – Als App auf dem Homescreen ablegen
 
