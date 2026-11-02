@@ -45,7 +45,7 @@ Dieses Tool verfolgt einen **"Local-First"** Ansatz:
 
 Die Web-Version lässt sich auf dem iPhone oder iPad ganz einfach wie eine richtige App nutzen – auch ohne Internetverbindung:
 
-1. Die Seite in **Safari** öffnen.
+1. Die Seite https://astromatz.github.io/retirementplanner/ in **Safari** öffnen.
 2. Unten auf das **Teilen-Symbol** tippen (das Viereck mit dem Pfeil nach oben ↑).
 3. Im Menü nach unten scrollen und **„Zum Home-Bildschirm"** antippen.
 4. Einen Namen vergeben und auf **„Hinzufügen"** tippen.
